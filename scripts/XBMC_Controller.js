@@ -1,5 +1,6 @@
-var XBMC_Controller = function(params) {
-
+var XBMC_Controller = function(xbmc, mysql) {
+	if (typeof xbmc != "object") xbmc = {};
+	if (typeof mysql != "object") mysql = {};
 	//var MoviesArray = null;			// Global array for Movies
 	//var TVShowsArray = null;			// Global array for TV Shows
 	//var ArtistsArray = null;			// Global array for Music
@@ -8,17 +9,46 @@ var XBMC_Controller = function(params) {
 	var mediaListIDs = [];
 
 	var self = {
-		address:		params.address || "192.168.10.103",
-		port:			params.port || "9090",
-		mac:			params.mac || "",
-		username:		params.username || "xbmc",
-		password:		params.password || "xbmc",
+		config:		{
+			ip:		{
+					join:		5051,
+					value:		xbmc.ip || "192.168.10.103",
+			},
+			port:		{
+					join:		5052,
+					value:		xbmc.port || "9090",
+			},
+			mac:		{
+					join:		5053,
+					value:		xbmc.mac || "C8-60-00-01-E2-A2",
+			},
+			username:	{
+					join:		5054,
+					value:		xbmc.username || "xbmc",
+			},
+			password:	{
+					join:		5055,
+					value:		xbmc.password || "xbmc",
+			},
+			mysqlenabled:	{
+					join:		5056,
+					value:		((mysql.enabled) ? 1 : 0),
+			},
+			mysqlip:	{
+					join:		5057,
+					value:		mysql.ip || "192.168.10.100",
+			},
+			mysqlmac:	{
+					join:		5058,
+					value:		mysql.mac || "00:22:4D:7B:38:36",
+			},
+		},
 		get:			[],
 		joins:			{
 			connected:	4001,
 			init:		{
-						join:		245,
-						queue:		[],
+					join:		245,
+					queue:		[],
 			},
 		},
 		ids:			{
@@ -36,9 +66,9 @@ var XBMC_Controller = function(params) {
 		jsonLoopID:		null,
 		jsonWaitResponse:	false,
 		player:			{
-				speed:		null,
-				id:		null,
-				item:		{
+			speed:		null,
+			id:		null,
+			item:		{
 							id:		null,
 							type:		null,
 				},
@@ -50,6 +80,7 @@ var XBMC_Controller = function(params) {
 				//player:		null, // ENUM(0, 1, "audio", "video")
 		},
 		listsComplete:		false,
+		configJoins:		[],
 	};
 
 	var setup = false;
@@ -92,14 +123,60 @@ var XBMC_Controller = function(params) {
 
 	// --- Public Functions --- //
 	self.setup = function() {
+		self.configJoins = []; // reset array
+		// build the array of config joins
+		for ( var prop in self.config ) {
+			if (self.config.hasOwnProperty(prop))
+			self.configJoins.push( ((prop == "mysqlenabled") ? "d" : "s") + self.config[prop].join );
+		}
+
 		if ( "XBMC" in CF.systems ) {
-			CF.setSystemProperties("XBMC", {
-				enabled:	true,
-				address:	self.address,
-				port:		self.port,
-				connect:	self.joins.connected
+			// load perisitent data
+			CF.getJoin(CF.GlobalTokensJoin, function(j, v, t) {
+				consolelog("Loaded the global tokens --v");
+				console.log(t);
+				if (t.hasOwnProperty("[XBMC_Config]")) {
+
+					consolelog("Parsing persitent data from [XBMC_Config] global token to json object");
+					try {
+						obj = JSON.parse(t["[XBMC_Config]"]) || null;
+						console.log(obj);
+
+						for ( var prop in obj ) {
+							if (obj.hasOwnProperty(prop)) self.config[prop].value = obj[prop];
+						}
+					} catch (e) {
+						consolelog("Parsing of global token failed - " + e);
+					} finally {
+						// set config joins and prepare object for global token
+						var joins = [];
+						var config = {};
+						for ( var prop in self.config ) {
+							try	{
+								consolelog("Building join array: prop = " + prop);
+								if (self.config.hasOwnProperty(prop)) {
+									joins.push({join: ((prop == "mysqlenabled") ? "d" :"s") + self.config[prop].join, value: self.config[prop].value});
+									config[prop] = self.config[prop].value;
+								}
+							} catch (e) {
+								consolelog("exception caught building config joins or tokens array - " + e);
+							}
+						}
+						joins.push({join: CF.GlobalTokensJoin, tokens: {"[XBMC_Config]": JSON.stringify(config)}});
+						//console.log(joins);
+						//console.log(config);
+						CF.setJoins(joins, false);
+					}
+				}
+
+				CF.setSystemProperties("XBMC", {
+					enabled:	true,
+					address:	self.config.ip.value,
+					port:		self.config.port.value,
+					connect:	self.joins.connected,
+				});
+				return true;
 			});
-			return true;
 		} else {
 			consolelog("No XBMC system defined in gui!");
 			return false;
@@ -145,7 +222,7 @@ var XBMC_Controller = function(params) {
 			} catch (e) {
 				CFlog("Exception caught while processing response in xbmc.json: " + e);
 			}
-		} else {
+		} else if (self.joins.connected.value == 1) {
 			if (self.jsonLoopID == null) {
 				self.jsonLoopID = setInterval(function() {
 					consolelog("JSON request queue --v");
@@ -1011,6 +1088,7 @@ var XBMC_Controller = function(params) {
 
 
 	// --- Initialisation --- //
-	return ( (setup = self.setup()) === true ) ? self : false; // return false if setup not completed... needs testing
+	//return ( (setup = self.setup()) === true ) ? self : false; // return false if setup not completed... needs testing
+	return self;
 
 };

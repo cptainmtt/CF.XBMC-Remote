@@ -34,10 +34,10 @@ var XBMC_GUI = function() {
 				fanart:		4104,	// S(image)
 				file:		4105,	// S(text)
 			},
-			firstThumbnail:	1,	// mediaList->S(image)
-			firstTitle:	21,	// mediaList->S(text)
-			firstYear:	41,	// mediaList->S(text)
-			firstWatched:	61,	// mediaList->D(button)
+			firstThumbnail:		1,	// mediaList->S(image)
+			firstTitle:		21,	// mediaList->S(text)
+			firstYear:		41,	// mediaList->S(text)
+			firstWatched:		61,	// mediaList->D(button)
 			volume:		{
 				level:			200,	// A + S(text)
 				knob:			201,	// S(image)
@@ -52,9 +52,9 @@ var XBMC_GUI = function() {
 			repeat:			242,	// D(button) + S(image)
 			shuffle:		243,	// D(button)
 			subtitles:		244,	// D(button)
-			yatse:	{
+			yatse:		{
 				page:			5,	// D(main page)
-				sidemenu:	{
+				sidemenu:		{
 					subpage:		5001,
 					movies_info:		5020,
 					tvshows_info:		5021,
@@ -107,6 +107,10 @@ var XBMC_GUI = function() {
 						},
 				mediaList:		5041,
 				transport_playpause:	5042,
+				xbmc:			5013,		// D(subpage)
+				mysql:			5014,		// D(subpage)
+				mysqlenabled:		5056,		// D(button)
+
 			},
 
 
@@ -120,12 +124,14 @@ var XBMC_GUI = function() {
 
 	// --- Public Functions --- //
 	self.setup = function(params) {
-		self.XBMC = new XBMC_Controller({});
+		self.XBMC = new XBMC_Controller();
+		if ( (r = self.XBMC.setup()) === false ) consolelog("Failed to create the XBMC_Controller object");
+
 
 		// Clear lists from previous data for new XBMC instance to load new data
 		CF.setJoins([
-			{join: "l"+self.joins.mediaList, value: "0x"},			// TV/Movie/Music Wall list
-			{join: "l"+self.joins.yatse.mediaList, value: "0x"},		// TV/Movie/Music Wall list
+			{join: "l"+self.joins.mediaList, value: "0x"},			// clear the TV/Movie/Music Wall list
+			{join: "l"+self.joins.yatse.mediaList, value: "0x"},		// clear the TV/Movie/Music Wall list
 			{join: "d"+self.joins.yatse.controls, value: 1},		// show the controls page
 			{join: "d"+self.joins.yatse.wall, value: 0},			// hide the media wall page
 			{join: "d"+(self.joins.yatse.topbar.subpage-1), value: 1},		// show the standard topbar
@@ -161,7 +167,12 @@ var XBMC_GUI = function() {
 			"d"+self.joins.shuffle,
 			"d"+self.joins.repeat,
 			"d"+self.joins.subtitles,
+			"d"+self.joins.yatse.mysqlenabled,
+			"d"+self.joins.yatse.xbmc,
 			], onJoinChange);
+
+		CF.watch(CF.JoinChangeEvent, self.XBMC.configJoins, onConfigChange);
+		console.log(self.XBMC.configJoins);
 
 		CF.watch(CF.ObjectPressedEvent, "a4003", onSliderPressed);
 		CF.watch(CF.ObjectDraggedEvent, "a"+self.joins.progress, onSliderDragged);
@@ -181,6 +192,8 @@ var XBMC_GUI = function() {
 			{join: "d"+self.joins.yatse.specialCommands, value: 0},
 			{join: "d"+self.joins.yatse.subCommands, value: 0},
 			{join: "d"+self.joins.yatse.diagnostics.subpage, value: 0},
+			{join: "d"+self.joins.yatse.xbmc, value: 0},
+			{join: "d"+self.joins.yatse.mysql, value: 0},
 		]);
 	};
 
@@ -784,6 +797,17 @@ var XBMC_GUI = function() {
 			valid = [0, 1];
 			if ( ! (val in valid) ) val = (v == 1) ? 0 : 1;
 			CF.setJoins("d"+self.joins.yatse.topbar.subpage, val);
+		});
+	};
+
+	self.WakeUp = function() {
+		// get mac details from join strings (user editable via input text boxes)
+		CF.getJoins(["s"+self.XBMC.config.mac.join, "s"+self.XBMC.config.mysqlmac.join], function(joins) {
+			for (var prop in joins ) {
+				if (joins[prop].hasOwnProperty("value") && typeof joins[prop].value == "string" )  WOL(joins[prop].value);
+			}
+			//if (typeof joins["s"+self.XBMC.config.mac.join].value == "string") WOL(joins["s"+self.XBMC.config.mac.join].value);
+			//if (typeof joins["s"+self.XBMC.config.mysqlmac.join].value == "string") WOL(joins["s"+self.XBMC.config.mysqlmac.join].value);
 		});
 	};
 
@@ -1398,8 +1422,15 @@ var XBMC_GUI = function() {
 		var preloadIntervalID = setInterval(function() {
 			// check to see if artist list has been loaded or preload timeout expired before presenting interface
 			if ( preloadTimeoutID == null || self.XBMC.listsComplete == true ) {
-				if (preloadTimeoutID == null) self.XBMC.DisplayInitMsg("xbmc connection timed out...");
-				else {
+				if (preloadTimeoutID == null) {
+					self.XBMC.DisplayInitMsg("xbmc connection timed out...");
+
+					// kill the json loop if running TODO!!
+
+					// show XBMC config subpage
+					// set the joins to show the subpage and set the locations
+					CF.setJoin("d"+self.joins.yatse.xbmc, 1 );
+				} else {
 					self.XBMC.DisplayInitMsg("xbmc initialisation complete...");
 					clearTimeout(preloadTimeoutID);
 					preloadTimeoutID = null;
@@ -1468,6 +1499,8 @@ var XBMC_GUI = function() {
 					});
 				}
 				break;
+			case "d"+self.joins.yatse.xbmc:
+				CF.setJoin("d"+self.joins.yatse.mysql, value);  // keep both pages in sync
 			case "d"+self.joins.yatse.specialCommands:
 			case "d"+self.joins.yatse.pcCommands:
 			case "d"+self.joins.yatse.diagnostics.subpage:
@@ -1491,7 +1524,41 @@ var XBMC_GUI = function() {
 				console.log(tokens);
 				if ( value == 0 ) myXBMC.XBMC.Seek(tokens["[sliderval]"]);
 				break;
+			case "d"+self.joins.yatse.mysqlenabled:
+				switch(value) {
+					case 0:
+						// move xbmc subpage to y(168) and mysql to y(555)
+						CF.setProperties([
+							{join: "d"+self.joins.yatse.xbmc, y: 168},
+							{join: "d"+self.joins.yatse.mysql, y: 555}
+						], 0, 1.5, CF.AnimationCurveEaseOut);
+						break;
+					case 1:
+						// move xbmc subpage to y(118) and mysql to y(635)
+						CF.setProperties([
+							{join: "d"+self.joins.yatse.xbmc, y: 118},
+							{join: "d"+self.joins.yatse.mysql, y: 635}
+						], 0, 1.5, CF.AnimationCurveEaseOut);
+						break;
+				}
+				break;
+
 		}
+	}
+
+	function onConfigChange(join, value, tokens) {
+		consolelog("Updating persitent config data...");
+		// request the value's from the joins
+		CF.getJoins(self.XBMC.configJoins, function(obj) {
+			console.log(obj);
+			var data = {};
+			for ( var prop in obj ) {
+				if (obj[prop].hasOwnProperty("value")) data[prop] = obj[prop].value;
+			}
+			// save the data to the Global Token to persist across sessions
+			consolelog("Setting [XBMC_Config] to = " + JSON.stringify(data));
+			CF.setToken(CF.GlobalTokens, "[XBMC_Config]", JSON.stringify(data));
+		});
 	}
 
 	function onSliderPressed(j, v, t) {
@@ -1659,6 +1726,27 @@ var XBMC_GUI = function() {
 			return img;
 		}
 	};
+
+	function WOL(mac) {
+		if ("WOL" in CF.systems) {
+			nums = mac.split(/[:-]/);
+			if ( (nums.length == 6) && (typeof nums == "object") ) {
+				command = "";
+				nums.forEach(function(value, index, arr) {
+					command += String.fromCharCode(parseInt(value, 16));
+					//command += "\x" + value;
+				}, command);
+
+				for (i = 0; i < 4; i++) command += command; // duplicate for 16
+
+				console.log("Sending WOL packet to " + mac + "\n" + "\xFF\xFF\xFF\xFF\xFF\xFF" + command);
+				for ( i = 0; i < 5; i++ ) CF.send("WOL", "\xFF\xFF\xFF\xFF\xFF\xFF" + command);
+			} else {
+				console.log("Invalid mac address(" + mac + ") supplied for WOL command");
+				return false;
+			}
+		}
+	}
 
 	function consolelog(msg) {
 		if (CF.debug) console.log("XBMC_GUI: " + msg);

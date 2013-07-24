@@ -1,3 +1,4 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <gui>
   <properties>
     <project>XBMC</project>
@@ -311,11 +312,16 @@
     <theme type="button" name=".yatse_transport_play_pause[state='0']"><![CDATA[padding: 0px 0px 0px 0px; background-image: url(buttons\yatse_transport_pause.png); color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
     <theme type="button" name=".yatse_transport_play_pause[state='1']"><![CDATA[padding: 0px 0px 0px 0px; background-image: url(buttons\yatse_transport_play.png); color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
     <theme type="text" name=".Yatse_preloading_text"><![CDATA[ color: #A0A0A0; font-size: 12px; font-name: 'Roboto-Italic'; font-family: 'Roboto'; text-align: center; vertical-align: middle; font-weight: normal; font-style: italics; text-decoration: none; display: table-cell;]]></theme>
+    <theme type="input" name=".Yatse_Settings_Input"><![CDATA[ background-color: White; border-width: 1px; border-color: #000000; color: Black; font-size: 20px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: left; vertical-align: middle; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
+    <theme type="text" name=".Yatse_Settings_text"><![CDATA[ color: White; font-size: 20px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: left; vertical-align: middle; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
+    <theme type="button" name=".Tickbox[state='0']"><![CDATA[padding: 0px 0px 0px 0px; background-image: url(buttons\50px-tickbox-off.png); color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
+    <theme type="button" name=".Tickbox[state='1']"><![CDATA[padding: 0px 0px 0px 0px; background-image: url(buttons\50px-tickbox-on.png); color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
   </themes>
   <tokens>
     <token name="[XBMC_Movies]" value="" persist="1" />
     <token name="[XBMC_TVShows]" value="" persist="1" />
     <token name="[XBMC_Artists]" value="" persist="1" />
+    <token name="[XBMC_Config]" value="" persist="1" />
     <token name="[TVGuide_Channels]" value="" persist="1" />
     <token name="[TVGuide_Data]" value="" persist="1" />
     <token name="[TVGuide_Logos]" value="" persist="1" />
@@ -581,6 +587,8 @@
       <subpage name="Yatse_PC_Commands" x="1356" y="81" j="5007" transition1="moveIn" subtype1="fromTop" time1="0.5" ease1="easeOut" transition2="moveIn" subtype2="fromTop" time2="0.5" ease2="easeIn" clickthrough="0" topmost="0" v="0" l="0" />
       <subpage name="Yatse_Topbar" x="0" y="0" j="5002" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="1" topmost="1" v="1" l="0" />
       <subpage name="Yatse_Topbar_Active" x="0" y="0" j="5003" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="1" topmost="1" v="0" l="0" />
+      <subpage name="Yatse_MySQL_Settings" x="558" y="555" j="5014" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
+      <subpage name="Yatse_XBMC_Configuration" x="558" y="168" j="5013" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
     </landscape>
   </page>
   <page name="Yatse_Settings" j="6" transition="None" subtype="None" time="0" ease="">
@@ -2674,6 +2682,71 @@ Drama</txt>
     <txt j="5083" x="131" y="249" w="90" h="25" t="yatse_paragraph_middle" wrap="False" l="0">xbmc</txt>
     <txt j="0" x="21" y="324" w="110" h="25" t="yatse_paragraph_middle" wrap="False" l="0">Media Type</txt>
     <txt j="5085" x="131" y="324" w="90" h="25" t="yatse_paragraph_middle" wrap="False" l="0">?</txt>
+  </subpage>
+  <subpage name="Yatse_XBMC_Configuration" w="803" h="518" clip="1" t="yatse_popup_bg">
+    <img x="0" y="95" w="821" h="3" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_underline.png</img>
+    <img x="0" y="98" w="821" h="50" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_header_bg.png</img>
+    <txt j="0" x="35" y="98" w="500" h="50" t="Yatse_Command_Header" wrap="False" l="0">XBMC Settings</txt>
+    <img x="1" y="518" w="801" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <btn j="0" x="0" y="0" w="821" h="95" t="yatse_commands_title" flip="None" sim="0" l="0" s="1">
+      <inactive s="0">Configuration</inactive>
+      <active s="0">Configuration</active>
+    </btn>
+    <input j="5051" s="5051" x="407" y="158" w="386" h="50" pass="0" autoFocus="1" f="0" t="Yatse_Settings_Input" l="0">
+    </input>
+    <txt j="0" x="10" y="158" w="386" h="50" t="Yatse_Settings_text" wrap="False" l="0">XBMC IP Address</txt>
+    <input j="5052" s="5052" x="407" y="218" w="386" h="50" pass="0" autoFocus="0" f="2" t="Yatse_Settings_Input" l="0">
+    </input>
+    <txt j="0" x="10" y="218" w="386" h="50" t="Yatse_Settings_text" wrap="False" l="0">XBMC Port</txt>
+    <input j="5054" s="5054" x="407" y="338" w="386" h="50" pass="0" autoFocus="0" f="0" t="Yatse_Settings_Input" l="0">
+    </input>
+    <txt j="0" x="10" y="338" w="386" h="50" t="Yatse_Settings_text" wrap="False" l="0">XBMC Username</txt>
+    <input j="5055" s="5055" x="407" y="398" w="386" h="50" pass="1" autoFocus="0" f="0" t="Yatse_Settings_Input" l="0">
+    </input>
+    <txt j="0" x="10" y="398" w="386" h="50" t="Yatse_Settings_text" wrap="False" l="0">XBMC Password</txt>
+    <txt j="0" x="10" y="458" w="386" h="50" t="Yatse_Settings_text" wrap="False" l="0">MySQL Backend In Use?</txt>
+    <btn j="5056" x="407" y="458" w="53" h="50" t="Tickbox" flip="None" sim="2" l="0" s="1">
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <input j="5053" s="5053" x="407" y="278" w="386" h="50" pass="0" autoFocus="0" f="0" t="Yatse_Settings_Input" l="0">
+    </input>
+    <txt j="0" x="10" y="278" w="386" h="50" t="Yatse_Settings_text" wrap="False" l="0">XBMC MAC Address</txt>
+    <img x="0" y="0" w="1" h="519" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="802" y="0" w="1" h="519" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="0" y="0" w="803" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="0" y="518" w="803" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+  </subpage>
+  <subpage name="Yatse_MySQL_Settings" w="803" h="374" clip="1" t="yatse_popup_bg">
+    <img x="0" y="228" w="801" h="50" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_header_bg.png</img>
+    <txt j="0" x="35" y="228" w="733" h="50" t="Yatse_Command_Header" wrap="False" l="0">Functions</txt>
+    <btn j="0" x="401" y="279" w="401" h="95" t="yatse_commands_button" flip="None" sim="1" l="0" s="1" js="myXBMC.XBMC.SystemAction(&quot;reboot&quot;)">
+      <inactive s="0">Reboot XBMC</inactive>
+      <active s="0">Reboot XBMC</active>
+    </btn>
+    <btn j="0" x="1" y="132" w="801" h="95" t="yatse_commands_button" flip="None" sim="1" l="0" s="1" js="myXBMC.XBMC.InputAction(&quot;audiotoggle&quot;)">
+      <inactive s="0">Re-Connect</inactive>
+      <active s="0">Re-Connect</active>
+    </btn>
+    <img x="1" y="131" w="801" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="0" y="373" w="803" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="401" y="279" w="1" h="95" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <btn j="0" x="1" y="279" w="401" h="95" t="yatse_commands_button" flip="None" sim="1" l="0" s="1" js="myXBMC.WakeUp()">
+      <inactive s="0">Wake XBMC</inactive>
+      <active s="0">Wake XBMC</active>
+    </btn>
+    <img x="1" y="227" w="801" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="0" y="278" w="803" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <input j="5057" s="5057" x="407" y="11" w="386" h="50" pass="0" autoFocus="0" f="0" t="Yatse_Settings_Input" l="0">
+    </input>
+    <txt j="0" x="10" y="11" w="386" h="50" t="Yatse_Settings_text" wrap="False" l="0">MySQL Server IP Address</txt>
+    <input j="5058" s="5058" x="407" y="71" w="386" h="50" pass="0" autoFocus="0" f="0" t="Yatse_Settings_Input" l="0">
+    </input>
+    <txt j="0" x="10" y="71" w="386" h="50" t="Yatse_Settings_text" wrap="False" l="0">MySQL Server MAC Address</txt>
+    <img x="0" y="0" w="1" h="374" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="802" y="0" w="1" h="374" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
   </subpage>
   <subpage name="TV_Guide_Multi_List" w="1920" h="996" clip="1">
     <img x="0" y="0" w="175" h="1040" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\tv_logos_bg.png</img>

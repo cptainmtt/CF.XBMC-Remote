@@ -18,3 +18,11 @@ local.properties
 # Eclipse project files
 .classpath
 .project
+
+#other
+PSD/
+temp images/
+Backups/
+*.ai
+*.PSD
+*.asv

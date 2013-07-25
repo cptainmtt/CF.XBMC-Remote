@@ -31,8 +31,14 @@ var joins = {
 	repeat:			242,	// D(button)
 	shuffle:		243,	// D(button)
 	subtitles:		244,	// D(button)
-	init:			245,	// S(text)
+	init:		{
+				join:		245,	// S(text)
+				queue:		[],
+	},
 };
+
+var preloadComplete = false;
+
 
 function globalGesture(gesture) {
 	switch (gesture.type) {
@@ -168,6 +174,16 @@ function onJoinChange(j, v, t) {
 	}
 }
 
+function onPreloadingComplete() {
+	//CF.unwatch(CF.PreloadingCompleteEvent);
+	setTimeout(function() {
+		preloadComplete = true;
+	}, 500);
+	CF.log("PRELOADING COMPLETE");
+	//clearInterval(initLoopID);
+	//delete initLoopID;
+}
+
 function tvGotoChannel(channel) {
 	if ( parseInt(channel, 10) > 0 ) {
 		console.log("Sending command TV Digit " + channel);
@@ -177,6 +193,66 @@ function tvGotoChannel(channel) {
 }
 
 
+function DisplayInitMsg() {
+	try {
+		var queues = [];
+		var msg = null;
+
+		try  {
+			msg = myAmp.init.queue.shift()
+			if (msg == undefined) throw "No msgs waiting from amp";
+			CF.log("Denon queue length = " +myAmp.init.queue.length);
+		} catch (e) {
+			try {
+				msg = myTVGuide.init.queue.shift();
+				if (msg == undefined) throw "No msgs waiting from Argus TV";
+				CF.log("TV server queue length = " + myTVGuide.init.queue.length);
+			} catch (e) {
+				try {
+					msg = myXBMC.XBMC.joins.init.queue.shift();
+					if (msg == undefined) throw "No msgs waiting from XBMC";
+					CF.log("XBMC queue length = " + myXBMC.XBMC.joins.init.queue.length);
+				} catch (e) {
+					//CF.log("Init msg queue is empty");
+					if ( !(preloadComplete) ) msg = "continuing to preload command fusion data...";
+				}
+			}
+		}
+
+
+		//for ( key in queues ) {
+		//	if (queues.hasOwnProperty(key) && typeof queues[key] == "object" && queues[key].length > 0) {
+		//		var msg = queues[key].shift();
+		//		break;
+		//	}
+		//}
+
+		//if (typeof msg == "string") joins.init.queue.push(msg);
+		//console.log("init.queue --v");
+		//console.log(self.joins.init.queue);
+
+		if ( typeof msg == "string" ) {
+			//console.log("displaying init msg - " + msg);
+			CF.log("displaying init msg = " + msg.toLowerCase());
+			CF.setJoin("s"+joins.init.join, msg);
+			CF.setProperties({join: "s"+joins.init.join, opacity: 1}, 0, 0, CF.AnimationCurveLinear, function(j) {
+				// fade the msg out over 5secs
+				CF.setProperties({join: j, opacity: 0}, 0, Math.floor((Math.random()*5)+0.5), CF.AnimationCurveLinear, function() {
+					// loop until queues are empty and preload is complete
+					DisplayInitMsg();
+				});
+			}, "s"+joins.init.join);
+		} //else if (!preloadComplete) {
+		//	// loop until preload complete
+		//	setTimeout(function() {
+		//		DisplayInitMsg();
+		//	}, 300);
+		//}
+	} catch (e) {
+		console.log("exception caught in DisplayInitMsg(msg) - " + e);
+	}
+}
+
 
 CF.userMain = function() {
 	//try {
@@ -184,6 +260,7 @@ CF.userMain = function() {
 
 		// Start watching feedback items
 		CF.watch(CF.PageFlipEvent, onPageFlip, true);
+		CF.watch(CF.PreloadingCompleteEvent, onPreloadingComplete);
 		//CF.watch(CF.JoinChangeEvent, [
 		//	"s"+joins.init,
 		//], onJoinChange);
@@ -199,10 +276,13 @@ CF.userMain = function() {
 		myAmp = new DenonAVR2312("DenonAVR2312-RS232");
 		myDial = new Dial({level: "s"+joins.volume.level, knob: "s"+joins.volume.knob, touch: "s"+joins.volume.touch, maxTime: 0.2, minTime: 0.1, angleOffset: -30, maxAngle: 300});
 		myTVGuide = new TVGuide( {hours: 4 } );
-		myArgusTV = new ArgusTV("1", {"address": "192.168.10.100"});
-		myXBMC = new XBMC_GUI({}); // create using default settings
+		//myTVServer = new ArgusTV({"address": "192.168.10.100"});
+		myXBMC = new XBMC_GUI(); // create using default settings
 		myXBMC.configureVolume(myAmp);
 		myXBMC.setup();
+
+		DisplayInitMsg();
+
 
 
 

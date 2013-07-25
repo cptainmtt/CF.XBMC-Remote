@@ -1,4 +1,3 @@
-var backendTV;
 /*=====================================================================
 
 Optional params =
@@ -10,6 +9,7 @@ filter		=> include only the LCN's provided here
 =====================================================================*/
 
 var TVGuide = function( params, listJoin ) {
+	var backendTV = null;
 	self = {
 		channels:		new Array(),
 		guides:			new Array(),
@@ -20,6 +20,8 @@ var TVGuide = function( params, listJoin ) {
 						max_height: 100,
 					},
 		joins:			{
+						//connected:		3000, // D(status)
+						//address:		3000, // S(text)
 						"tvGuideList":		listJoin || 3101,
 						"page":			3,
 						"logoImg":		1,
@@ -91,15 +93,19 @@ var TVGuide = function( params, listJoin ) {
 		infoPageShowing: 	false,
 		loading:		false,
 		guideTime:		Date.now(),
+		init:		{
+						guide:		[],
+		},
 		//info:			[],
 	};
 
 
 	self.setup = function() {
-		if (backendTV == null) {
-			backendTV = new ArgusTV("", {"address": "192.168.10.100"});
-			backendTV.ping();
-		}
+		//if (backendTV == null) {
+		DisplayInitMsg("connecting to argus tv server...");
+		backendTV = new ArgusTV();
+		//backendTV.ping(); // built in setup() of ArgusTV
+		//}
 
 
 		self.hideProgramInfo();
@@ -131,7 +137,7 @@ var TVGuide = function( params, listJoin ) {
 
 		]);
 		*/
-
+		DisplayInitMsg("building tv guide interface...");
 		self.maxMinutes = (self.maxHours == 0 && self.maxMinutes == 0) ? 240 : (self.maxMinutes || (self.maxHours * 60));
 		self.refreshRate = Math.floor(self.maxMinutes/60 * self.refreshPercent/100);
 		self.menuState = 0;
@@ -161,6 +167,7 @@ var TVGuide = function( params, listJoin ) {
 
 			self.setupComplete = true;
 			self.consolelog("Setup of a new TVGuide has been completed...");
+			DisplayInitMsg("tv guide interface ready...");
 		});
 	};
 
@@ -214,7 +221,7 @@ var TVGuide = function( params, listJoin ) {
 				self.consolelog("exception caught! /n" + e);
 			}
 		} else {
-			backendTV.online = false; // force fresh of server status on next page load... ?
+			backendTV.online = false; // force refresh of server status on next page load... ?
 		}
 	};
 
@@ -1338,6 +1345,11 @@ var TVGuide = function( params, listJoin ) {
 	self.CFlog = function(msg) {
 			if (CF.debug) CF.log("TVGuide: " + msg);
 	};
+
+	// Public functions
+	function DisplayInitMsg(msg) {
+		if (typeof msg == "object") self.init.queue.push(msg);
+	}
 
 	self.setup();
 

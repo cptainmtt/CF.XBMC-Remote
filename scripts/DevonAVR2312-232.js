@@ -13,7 +13,7 @@ LAST MOD:	May 2013
 //var DenonAVR2312 = function(systemName, ip, join) {
 var DenonAVR2312 = function(systemName) {
 	// Catch to make sure TCP system exists
-	if ( !( (systemName in CF.systems) ) ) return false; // && CF.systems[systemName].type == "tcp" && CF.systems[systemName].port == 23
+	if ( !(CF.systems.hasOwnProperty(systemName)) ) return false; // && CF.systems[systemName].type == "tcp" && CF.systems[systemName].port == 23
 
 	var power;
 	var timeoutID = null;
@@ -22,29 +22,29 @@ var DenonAVR2312 = function(systemName) {
 	var query = new Array();
 	var queryCount = 0;
 	var initComplete = false;
+	var currentPage = null;
 
 	try {
 		var self = {
-			systemName:			systemName,
-			//systemIP:			( self.validIPAddress(ip) ) ? ip : CF.systems[systemName].address,
-			//joins.connected:		{"join": ( join > 20 ) ? join : CF.systems[systemName].connect},
-			joins:				{
-								volume:		{
-									level:	200,	// A + S
-									mute:	203,	// D
-								},
-								connected:	500,
-								power:		501,
-								comms:		504,
-								init:		245,
-							},
-			power:				false, // D(button?)
-			init:				245, // S(text)
-
+			systemName:	systemName,
+			joins:		{
+						volume:		{
+								level:	200,	// A + S
+								mute:	203,	// D
+						},
+						connected:	500,	// D(status)
+						address:	500,	// S(text)
+						power:		501,
+						comms:		504,
+			},
+			power:		false, // D(button?)
+			init:		{
+						queue:		[],
+			},
 		};
 
 	} catch (e) {
-		consolelog("Caught exception in self - " + e);
+		consolelog("Caught exception declaring self - " + e);
 	}
 
 	self.setup = function() {
@@ -56,12 +56,13 @@ var DenonAVR2312 = function(systemName) {
 		});
 		*/
 
-		CF.watch(CF.FeedbackMatchedEvent, self.systemName, "AmpCatchAll", self.onTCPFeedback);
+		CF.watch(CF.FeedbackMatchedEvent, self.systemName, "AmpCatchAll", onTCPFeedback);
 		CF.watch(CF.ConnectionStatusChangeEvent, self.systemName, onConnectionStatusChange, true);
 
 		CF.watch(CF.JoinChangeEvent, "d"+self.joins.connected, onConnectedChange);
 		CF.watch(CF.JoinChangeEvent, "a"+self.joins.volume.level, onVolumeChange);
 		CF.watch(CF.JoinChangeEvent, "d"+self.joins.volume.mute, onDigitalChange);
+		CF.watch(CF.PageFlipEvent, onPageFlip, true);
 
 
 
@@ -92,7 +93,7 @@ var DenonAVR2312 = function(systemName) {
 							status = "mute";
 							break;
 					}
-					if ( status != null ) CF.setJoin("s"+self.joins.init, "syncing amplifier " + status + " status...");
+					if ( status != null && currentPage == "Preload") QueueInitMsg("syncing amplifier " + status + " status...");
 				}
 				//CF.setJoin("d"+self.joins.connected, 1);
 				var ascii = (command) + (parameter) + "\x0D";
@@ -104,7 +105,7 @@ var DenonAVR2312 = function(systemName) {
 		}
 	};
 
-	self.onTCPFeedback = function(name, matchedString) {
+	function onTCPFeedback (name, matchedString) {
 		// getting timeout problems... may be due to receiver sending feedback on its own causing timeout to be cleared?? - shouldn't
 
 		try {
@@ -175,7 +176,7 @@ var DenonAVR2312 = function(systemName) {
 					if (query.length == 0) {
 						clearInterval(id);
 						id = null;
-						CF.setJoin("s"+self.joins.init, ("amplifier initialisation complete..."));
+						QueueInitMsg("amplifier initialisation complete...");
 					}
 				}, 200);
 			}
@@ -199,6 +200,11 @@ var DenonAVR2312 = function(systemName) {
 		}
 	}
 
+	function onPageFlip(from, to, orientation) {
+	    currentPage = to;
+	}
+
+	// --- Public Functions ---
 	self.getPowerState = function() {
 		consolelog("power = " + self.power);
 		return (self.power) ? true : false;
@@ -558,6 +564,12 @@ var DenonAVR2312 = function(systemName) {
 		self.joins.volume.level = number;
 	};
 	*/
+
+	// --- Private Function ---
+
+	function QueueInitMsg(msg) {
+		if (typeof msg == "string") self.init.queue.push(msg);
+	}
 
 	function consolelog(msg) {
 		if (CF.debug) console.log("DenonAVR: " + msg);

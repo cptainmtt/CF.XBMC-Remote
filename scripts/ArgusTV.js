@@ -18,23 +18,54 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 */
 var ArgusTV = function(join, params) {
+	if (typeof params != "object") params = {}; // use defaults
 	var self = {
-		reqID:	0,
-		host:	function() {
-				if (params.address !== undefined) {
-					if (params.username !== undefined)
-						return "https://" + params.username + ((params.password !== undefined) ? ":" + params.password : "") + "@" + params.address + ":" + ((params.https !== undefined) ? params.https : "49941") + "/ArgusTV/";
-					else
-						return "http://" + params.address + ":" + ((params.http !== undefined) ? params.http : "49943") + "/ArgusTV/";
-				} else return undefined;
-			},
-		//online:	false,
+		reqID:		0,
+		address:	params.address || "192.168.10.100",
+		port:		params.port || null,
+		username:	params.username || "",
+		password:	params.password || "",
+		//protocol:	params.protocol || "http",
+		host:		null,
+		online:		false,
+		joins:		{
+					connected:	3050, // D(status)
+					address:	3051, // S(text)
+					port:		3052, // S(text)
+					username:	3053, // S(text)
+					password:	3054, // S(text)
+		},
+	};
+
+	self.setup = function() {
+
+		CF.watch(CF.JoinChangeEvent, "d"+self.joins.connected, function(j, v, t) {
+			self.online = ( v == 1 ) ? true: false;
+		});
+
+		CF.setJoins([
+			{join: "s"+self.joins.address,	value: self.address},
+			{join: "s"+self.joins.port,	value: self.port},
+			{join: "s"+self.joins.username,	value: self.username},
+			{join: "s"+self.joins.password,	value: self.password},
+		]);
+
+		try {
+			if (self.username.length <= 0) throw "Invalid username";
+			self.host =  "https://" + self.username + ( (self.password.length > 0) ? ":" + self.password : "") + "@" + self.address + ":" + ( (typeof self.port == "number") ? self.port : "49941") + "/ArgusTV/";
+		} catch (e) {
+			consolelog("Reverting to connection using HTTP...\n" + e);
+			self.host =  "http://" + self.address + ":" + ( (typeof self.port == "number") ? self.port : "49943") + "/ArgusTV/";
+		}
+
+		// test server connection
+		self.ping();
 	};
 
 	// rpc("string", "string" | {object}, function())
 	self.rpc = function(address, params, callback) {
 		try {
-			console.log(self.host() + address);
+			console.log(self.host + address);
 			//CF.logObject(params);
 			//console.log("params type = " + (typeof params).toLowerCase());
 			//console.log("params value = " + params);
@@ -44,12 +75,12 @@ var ArgusTV = function(join, params) {
 				params.json = "2.0";
 				params.id = self.reqID++;
 				params = JSON.stringify(params);
-				console.log("json rpc string = " + params);
+				consolelog("json rpc string = " + params);
 			}// else params = "";
 
 
 
-			CF.request(self.host() + address, "POST", {"content-type": "application/json"}, params, function(status, headers, body) {
+			CF.request(self.host + address, "POST", {"content-type": "application/json"}, params, function(status, headers, body) {
 				try {
 					if (status == 200) {
 						//CF.setJoin("d"+joins.onlineStatus, 1);
@@ -59,38 +90,45 @@ var ArgusTV = function(join, params) {
 
 						if (typeof data == "object" && "error" in data) {
 							self.lastError = data.error;
-							CF.log("RPC JSON RESPONSE FAILURE ---------");
+							CFlog("RPC JSON RESPONSE FAILURE ---------");
 							CF.logObject(data);
-							callback(false);
+							//callback(false);
 						} else {
 							console.log("Rest response ok - proceed with callback");
 							//console.log("\n" + body);
 							// NULL = no channel found
-							callback(data);
+							//callback(data);
 						}
-					} else if (status == 204) callback(data);
-					else {
-						CF.log("RPC STATUS FAILURE ---------");
-						CF.log(status);
+					} else if (status == 204) {
+						//callback(data);
+						CFlog("RPC STATUS " + status + " --------");
+					} else {
+						CFlog("RPC STATUS FAILURE ---------");
+						CFlog(status);
 						CF.logObject(headers);
-						CF.log(body);
-						callback(false);
+						CFlog(body);
+						//callback(false);
+						data = false;
 					}
+
+					callback(data);
+					CF.setJoin("d"+self.joins.connection, (data == false) ? 0 : 1);
 				} catch (e) {
-					console.log("Exception caught in self.rpc() callback - " + e);
+					consolelog("Exception caught in self.rpc() callback - " + e);
 				}
 			});
 		} catch (e) {
-			console.log("Exception caught in self.rpc() - " + e);
+			consolelog("Exception caught in self.rpc() - " + e);
 		}
 	};
 
 	self.ping = function() {
 		self.rpc("Core/Ping/50", null, function(data) {
-			//self.consolelog(data);
+			//consolelog(data);
 
-			self.online = ( data === false ) ? false : true;
-			//self.consolelog( "online = " + ((self.online == true) ? "TRUE!" : "FALSE!") );
+			//self.online = ( data === false ) ? false : true;
+
+			//consolelog( "online = " + ((self.online == true) ? "TRUE!" : "FALSE!") );
 		});
 	};
 
@@ -158,12 +196,12 @@ var ArgusTV = function(join, params) {
 
 		// params.startTime = Date object
 		json.LowerTime = ( "startTime" in params && typeof params.startTime.getMonth == "function") ? params.startTime.valueOf() : (+new Date);
-		self.consolelog("LowerTime = " + new Date(json.LowerTime).toLocaleString());
+		consolelog("LowerTime = " + new Date(json.LowerTime).toLocaleString());
 
 		// startTime = now
 		try {
 			var d = "\/Date(" + (json.LowerTime) + "+" + ("00" + ((new Date()).getTimezoneOffset() / 60)).slice(-2) + "00)\/";
-			self.consolelog("LowerTime = " + d);
+			consolelog("LowerTime = " + d);
 			json.LowerTime = d;
 		} catch (e) {
 			console.log("Exception caught making LowerTime - " + e);
@@ -234,7 +272,7 @@ var ArgusTV = function(join, params) {
 
 		//address = Scheduler/ChannelLogo/{channelId}/{width}/{height}/{useTransparentBackground}/{modifiedAfterTime}?argbBackground={argbBackground}
 		address = "Scheduler/ChannelLogo/" + GuideChannelId + "/300/300/true/19000101T010101";
-		console.log(self.host() + address);
+		console.log(self.host + address);
 
 
 
@@ -332,14 +370,15 @@ var ArgusTV = function(join, params) {
 		});
 	};
 
-	self.consolelog = function(msg) {
+	function consolelog(msg) {
 		if (CF.debug) console.log("ArgusTV: " + msg);
 	};
 
-	self.CFlog = function(msg) {
-			if (CF.debug) CF.log("ArgusTV: " + msg);
+	function CFlog(msg) {
+		if (CF.debug) CF.log("ArgusTV: " + msg);
 	};
 
+	self.setup();
 	return self;
 };
 //myTVGuide = new ArgusTV("s1", {address: "192.168.10.100"});

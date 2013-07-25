@@ -1,6 +1,6 @@
-var XBMC_Controller = function(xbmc, mysql) {
-	if (typeof xbmc != "object") xbmc = {};
-	if (typeof mysql != "object") mysql = {};
+var XBMC_Controller = function(params) {
+	if (typeof params != "object" || !params.hasOwnProperty("xbmc") || !params.hasOwnProperty("mysql")) params = {xbmc: {}, mysql: {}};
+
 	//var MoviesArray = null;			// Global array for Movies
 	//var TVShowsArray = null;			// Global array for TV Shows
 	//var ArtistsArray = null;			// Global array for Music
@@ -10,37 +10,41 @@ var XBMC_Controller = function(xbmc, mysql) {
 
 	var self = {
 		config:		{
-			ip:		{
+			name:		{
 					join:		5051,
-					value:		xbmc.ip || "192.168.10.103",
+					value:		params.xbmc.name || "rPi",
+			},
+			ip:		{
+					join:		5052,
+					value:		params.xbmc.ip || "192.168.10.103",
 			},
 			port:		{
-					join:		5052,
-					value:		xbmc.port || "9090",
+					join:		5053,
+					value:		params.xbmc.port || "9090",
 			},
 			mac:		{
-					join:		5053,
-					value:		xbmc.mac || "C8-60-00-01-E2-A2",
+					join:		5054,
+					value:		params.xbmc.mac || "C8-60-00-01-E2-A2",
 			},
 			username:	{
-					join:		5054,
-					value:		xbmc.username || "xbmc",
+					join:		5055,
+					value:		params.xbmc.username || "xbmc",
 			},
 			password:	{
-					join:		5055,
-					value:		xbmc.password || "xbmc",
+					join:		5056,
+					value:		params.xbmc.password || "xbmc",
 			},
 			mysqlenabled:	{
-					join:		5056,
-					value:		((mysql.enabled) ? 1 : 0),
+					join:		5057,
+					value:		((params.mysql.enabled) ? 1 : 0),
 			},
 			mysqlip:	{
-					join:		5057,
-					value:		mysql.ip || "192.168.10.100",
+					join:		5058,
+					value:		params.mysql.ip || "192.168.10.100",
 			},
 			mysqlmac:	{
-					join:		5058,
-					value:		mysql.mac || "00:22:4D:7B:38:36",
+					join:		5059,
+					value:		params.mysql.mac || "00:22:4D:7B:38:36",
 			},
 		},
 		get:			[],
@@ -79,6 +83,7 @@ var XBMC_Controller = function(xbmc, mysql) {
 				resume:		false,
 				//player:		null, // ENUM(0, 1, "audio", "video")
 		},
+		systemName:		"XBMC",
 		listsComplete:		false,
 		configJoins:		[],
 	};
@@ -132,6 +137,8 @@ var XBMC_Controller = function(xbmc, mysql) {
 
 		if ( "XBMC" in CF.systems ) {
 			// load perisitent data
+
+			self.QueueInitMsg("loading xbmc connection settings...");
 			CF.getJoin(CF.GlobalTokensJoin, function(j, v, t) {
 				consolelog("Loaded the global tokens --v");
 				console.log(t);
@@ -140,20 +147,20 @@ var XBMC_Controller = function(xbmc, mysql) {
 					consolelog("Parsing persitent data from [XBMC_Config] global token to json object");
 					try {
 						obj = JSON.parse(t["[XBMC_Config]"]) || null;
-						console.log(obj);
+						//console.log(obj);
 
 						for ( var prop in obj ) {
 							if (obj.hasOwnProperty(prop)) self.config[prop].value = obj[prop];
 						}
 					} catch (e) {
-						consolelog("Parsing of global token failed - " + e);
+						consolelog("Parsing of global token failed - " + e + "\nLoad XBMC config using default parameters...");
 					} finally {
 						// set config joins and prepare object for global token
 						var joins = [];
 						var config = {};
 						for ( var prop in self.config ) {
 							try	{
-								consolelog("Building join array: prop = " + prop);
+								//consolelog("Building join array: prop = " + prop);
 								if (self.config.hasOwnProperty(prop)) {
 									joins.push({join: ((prop == "mysqlenabled") ? "d" :"s") + self.config[prop].join, value: self.config[prop].value});
 									config[prop] = self.config[prop].value;
@@ -169,7 +176,7 @@ var XBMC_Controller = function(xbmc, mysql) {
 					}
 				}
 
-				CF.setSystemProperties("XBMC", {
+				CF.setSystemProperties(self.systemName, {
 					enabled:	true,
 					address:	self.config.ip.value,
 					port:		self.config.port.value,
@@ -213,7 +220,7 @@ var XBMC_Controller = function(xbmc, mysql) {
 						case "AudioLibrary.GetArtists":
 							consolelog("Preloading list of " + request.method.substr(16).toLowerCase() + "...");  // remove when finished testing
 							//CF.setJoin("s"+self.joins.init, ("preloading list of " + request.method.substr(16).toLowerCase() + " from " + self.address + "..."));
-							self.DisplayInitMsg("preloading list of " + request.method.substr(16).toLowerCase() + " from " + self.address + "...");
+							self.QueueInitMsg("preloading list of " + request.method.substr(16).toLowerCase() + " from " + self.address + "...");
 							break;
 					}
 				}
@@ -236,9 +243,10 @@ var XBMC_Controller = function(xbmc, mysql) {
 		}
 	};
 
-	self.DisplayInitMsg = function(msg) {
+	self.QueueInitMsg = function(msg) {
 		try {
 			if (typeof msg == "string") self.joins.init.queue.push(msg);
+			/*
 			//consolelog("init.queue --v");
 			//console.log(self.joins.init.queue);
 			if ( (msg = self.joins.init.queue.shift()) != undefined ) {
@@ -247,12 +255,13 @@ var XBMC_Controller = function(xbmc, mysql) {
 					CF.setJoin(j, msg);
 					// fade the msg out over 5secs
 					CF.setProperties({join: j, opacity: 0}, 0, 5, CF.AnimationCurveLinear, function() {
-						self.DisplayInitMsg();
+						self.QueueInitMsg();
 					});
 				}, "s"+self.joins.init.join);
 			} //else consolelog("init.queue.shift() == undefined");
+			*/
 		} catch (e) {
-			consolelog("exception caught in DisplayInitMsg(msg) - " + e);
+			consolelog("exception caught in QueueInitMsg(msg) - " + e);
 		}
 	};
 
@@ -717,7 +726,7 @@ var XBMC_Controller = function(xbmc, mysql) {
 
 	self.SystemAction = function(action) {
 		// execute the action
-		switch(action) {
+		switch(action.toLowerCase()) {
 			case "shutdown":
 				self.json("System.Shutdown", {}, null);  	// XBMC System : Shutdown
 				break;
@@ -730,7 +739,7 @@ var XBMC_Controller = function(xbmc, mysql) {
 			case "reboot":
 				self.json("System.Reboot", {}, null);  		// XBMC System : Reboot
 				break;
-			case "exit":
+			case "quit":
 				self.json("Application.Quit", {}, null);  	// XBMC System : Quit
 				break;
 		}
@@ -892,8 +901,8 @@ var XBMC_Controller = function(xbmc, mysql) {
 
 	};
 
-	self.Seek = function(analog) {
-		if (analog >=0 && analog <= 65535 && self.player.id != null) self.json("Player.Seek", {"playerid": self.player.id, "value": (analog / 65535) * 100}, "Player.Seek");
+	self.Seek = function(val) {
+		if (val >=0 && analog <= 100 && self.player.id != null) self.json("Player.Seek", {"playerid": self.player.id, "value": val}, "Player.Seek");
 	};
 
 	self.PartyMode = function(type) {

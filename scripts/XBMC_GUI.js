@@ -107,9 +107,11 @@ var XBMC_GUI = function() {
 						},
 				mediaList:		5041,
 				transport_playpause:	5042,
-				xbmc:			5013,		// D(subpage)
-				mysql:			5014,		// D(subpage)
-				mysqlenabled:		5056,		// D(button)
+				settings:	{
+						xbmc:			5013,		// D(subpage)
+						mysql:			5014,		// D(subpage)
+						mysqlenabled:		5056,		// D(button)
+				},
 
 			},
 
@@ -124,9 +126,10 @@ var XBMC_GUI = function() {
 
 	// --- Public Functions --- //
 	self.setup = function(params) {
+
 		self.XBMC = new XBMC_Controller();
 		if ( (r = self.XBMC.setup()) === false ) consolelog("Failed to create the XBMC_Controller object");
-
+		else self.XBMC.QueueInitMsg("setting up xbmc communications...");
 
 		// Clear lists from previous data for new XBMC instance to load new data
 		CF.setJoins([
@@ -134,7 +137,12 @@ var XBMC_GUI = function() {
 			{join: "l"+self.joins.yatse.mediaList, value: "0x"},		// clear the TV/Movie/Music Wall list
 			{join: "d"+self.joins.yatse.controls, value: 1},		// show the controls page
 			{join: "d"+self.joins.yatse.wall, value: 0},			// hide the media wall page
-			{join: "d"+(self.joins.yatse.topbar.subpage-1), value: 1},		// show the standard topbar
+			{join: "d"+(self.joins.yatse.topbar.subpage-1), value: 1},	// show the standard topbar
+			{join: "s"+self.joins.yatse.np_info_one.join,	value: ""},
+			{join: "s"+self.joins.yatse.np_info_two,	value: ""},
+			{join: "s"+self.joins.yatse.np_info_three,	value: ""},
+			{join: "s"+self.joins.yatse.sidemenu.np_primary_info, value: ""},
+			{join: "s"+self.joins.yatse.sidemenu.np_secondary_info, value: ""},
 		]);
 
 		if ( self.joins.yatse.np_thumbnail.x == null) {
@@ -167,20 +175,20 @@ var XBMC_GUI = function() {
 			"d"+self.joins.shuffle,
 			"d"+self.joins.repeat,
 			"d"+self.joins.subtitles,
-			"d"+self.joins.yatse.mysqlenabled,
-			"d"+self.joins.yatse.xbmc,
+			"d"+self.joins.yatse.settings.mysqlenabled,
+			"d"+self.joins.yatse.settings.xbmc,
 			], onJoinChange);
 
 		CF.watch(CF.JoinChangeEvent, self.XBMC.configJoins, onConfigChange);
-		console.log(self.XBMC.configJoins);
+		CF.watch(CF.ConnectionStatusChangeEvent, self.XBMC.systemName, onConnectionChange, true);
 
-		CF.watch(CF.ObjectPressedEvent, "a4003", onSliderPressed);
+		CF.watch(CF.ObjectPressedEvent, "a"+self.joins.progress, onSliderPressed);
 		CF.watch(CF.ObjectDraggedEvent, "a"+self.joins.progress, onSliderDragged);
-		CF.watch(CF.ObjectReleasedEvent, "a4003", onSliderReleased);
+		CF.watch(CF.ObjectReleasedEvent, "a"+self.joins.progress, onSliderReleased);
 
 		CF.setProperties({join: "s"+self.joins.yatse.fanart.join, opacity: 0}); // hide the fanart image
 
-		if ( (r = self.XBMC.setup()) === false ) consolelog("Failed to create the XBMC_Controller object");
+		//if ( (r = self.XBMC.setup()) === false ) consolelog("Failed to create the XBMC_Controller object");
 
 		return r;
 	};
@@ -192,8 +200,8 @@ var XBMC_GUI = function() {
 			{join: "d"+self.joins.yatse.specialCommands, value: 0},
 			{join: "d"+self.joins.yatse.subCommands, value: 0},
 			{join: "d"+self.joins.yatse.diagnostics.subpage, value: 0},
-			{join: "d"+self.joins.yatse.xbmc, value: 0},
-			{join: "d"+self.joins.yatse.mysql, value: 0},
+			{join: "d"+self.joins.yatse.settings.xbmc, value: 0},
+			{join: "d"+self.joins.yatse.settings.mysql, value: 0},
 		]);
 	};
 
@@ -214,7 +222,7 @@ var XBMC_GUI = function() {
 				// load existing list
 				consolelog("Loading cached " + obj.type + " list...");
 				//CF.setJoin("s"+self.joins.init, ("loading cached list of " + obj.type + "..."));
-				self.XBMC.DisplayInitMsg("loading cached list of " + obj.type + "...");
+				self.XBMC.QueueInitMsg("loading cached list of " + obj.type + "...");
 				self.XBMC.SetListArray(obj.type, decoded);
 
 				// Completing loading list from cache
@@ -766,6 +774,8 @@ var XBMC_GUI = function() {
 	};
 
 	self.getVolume = function() {
+		if (typeof volumeDevice != "object") self.XBMC.getVolume(self.joins.volume.level);
+		/*
 		switch(typeof volumeDevice) {
 			case "object":
 				// use external device for volume control (ie: AV Receiver)
@@ -776,6 +786,7 @@ var XBMC_GUI = function() {
 				self.XBMC.getVolume(self.volume.level);
 				break;
 		}
+		*/
 	}
 
 	// vol = [ 0 <= 100 ]
@@ -1006,7 +1017,7 @@ var XBMC_GUI = function() {
 				// Update the wall list
 				break;
 			case self.joins.volume.level:
-				if ( volumeDevice == null) { // if XBMC is used to control the volume, guards against XBMC sending volume updates to external device
+				if ( typeof volumeDevice != "object") { // if XBMC is used to control the volume, guards against XBMC sending volume updates to external device
 					// Update the volume level
 					vol = ( typeof json.result == "object" ) ? json.result.volume : json.result; // object returned from Application.GetProperties, integer returned from Application.setVolume
 					CF.setJoin("a"+self.joins.volume.level, vol);
@@ -1030,7 +1041,7 @@ var XBMC_GUI = function() {
 				// sends Player.GetProperties
 				if ( !(self.XBMC.UpdatePlayer()) ) stopNowPlayingLoop(); // stops loop in no active players
 				//else if (!(guiComplete)) CF.setJoin("s"+self.joins.init, "getting details of active player from xbmc...");
-				else if (!(guiComplete)) self.XBMC.DisplayInitMsg("getting details of active player from xbmc...");
+				else if (!(guiComplete)) self.XBMC.QueueInitMsg("getting details of active player from xbmc...");
 
 				break;
 			case "Player.GetProperties":
@@ -1041,9 +1052,9 @@ var XBMC_GUI = function() {
 
 				// preloading init messages
 				if (!(guiComplete)) {
-					self.XBMC.DisplayInitMsg("syncing subtitle status with xbmc...");
-					self.XBMC.DisplayInitMsg("syncing shuffle status with xbmc...");
-					self.XBMC.DisplayInitMsg("syncing connection status with xbmc...");
+					self.XBMC.QueueInitMsg("syncing subtitle status with xbmc...");
+					self.XBMC.QueueInitMsg("syncing shuffle status with xbmc...");
+					self.XBMC.QueueInitMsg("syncing connection status with xbmc...");
 				}
 
 				updateStatus(); // update the connection status icon colour
@@ -1131,9 +1142,9 @@ var XBMC_GUI = function() {
 
 				// preloading init messages
 				if (!(guiComplete)) {
-					self.XBMC.DisplayInitMsg("downloading xbmc fanart...");
-					self.XBMC.DisplayInitMsg("downloading xbmc thumbnail...");
-					self.XBMC.DisplayInitMsg("getting media information from xbmc...");
+					self.XBMC.QueueInitMsg("downloading xbmc fanart...");
+					self.XBMC.QueueInitMsg("downloading xbmc thumbnail...");
+					self.XBMC.QueueInitMsg("getting media information from xbmc...");
 				}
 
 				json.result.item.fanart = cleanImage(json.result.item.fanart);
@@ -1252,7 +1263,7 @@ var XBMC_GUI = function() {
 													if (!(guiComplete)) {
 														guiComplete = true;
 														//CF.setJoin("s"+self.joins.init, "preparation of of gui complete...");
-														self.XBMC.DisplayInitMsg("preparation of of gui complete...");
+														self.XBMC.QueueInitMsg("preparation of of gui complete...");
 													}
 													consolelog("Loop finished.. try to restart loop...\nnowPlayingLoop.enabled = " + nowPlayingLoop.enabled + ", nowPlayingLoop.complete = " + nowPlayingLoop.complete);
 													if ( self.XBMC.player.speed != 0 ) startNowPlayingLoop({complete: true});
@@ -1274,7 +1285,7 @@ var XBMC_GUI = function() {
 					if (!(guiComplete)) {
 						guiComplete = true;
 						//CF.setJoin("s"+self.joins.init, "preparation of of gui complete...");
-						self.XBMC.DisplayInitMsg("preparation of of gui complete...");
+						self.XBMC.QueueInitMsg("preparation of of gui complete...");
 					}
 
 					consolelog("Loop finished.. try to restart loop...\nnowPlayingLoop.enabled = " + nowPlayingLoop.enabled + ", nowPlayingLoop.complete = " + nowPlayingLoop.complete);
@@ -1373,19 +1384,53 @@ var XBMC_GUI = function() {
 		}
 	}
 
-	function run(callback) {
-		// Get volume state on startup
-		//CF.setJoin("s"+self.joins.init, );
-		self.XBMC.DisplayInitMsg("syncing xbmc volume...");
-		self.getVolume();
+	function init(callback) {
+
+		function syncVolume() {
+			// Get volume state on startup
+			self.XBMC.QueueInitMsg("syncing xbmc volume...");
+			self.getVolume();
+
+			startNowPlayingLoop();
+		}
+
+		function loadMediaLists() {
+			CF.getJoin(CF.GlobalTokensJoin, function(j, v, tokens) {
+				for (var key in tokens) {
+					if (tokens.hasOwnProperty(key)) {
+						switch(key) {
+							case "[XBMC_Movies]":
+							case "[XBMC_TVShows]":
+							case "[XBMC_Artists]":
+								//type = key.substring(6, key.length - 1).toLowerCase();
+								//consolelog("type = " + type);
+								listType = key.substring(6, key.length - 1).toLowerCase();
+								self.loadXBMCList( { type: listType, list: tokens[key] } );
+								break;
+						}
+					}
+				}
+				consolelog("THIS SHOULDNT BE SEEN BEFORE THE MEDIA LISTS HAVE BEEN LOADED!!");
+
+				var id = setInterval(function() {
+					if (self.XBMC.listsComplete) {
+						clearInterval(id);
+						id = null;
+						delete id;
+						syncVolume();
+					}
+				}, 300);
+			});
+		}
 
 		//resetGUI();  // not 100% sure if needed here as called again in onStopNowPlaying()
 
 		// Check XBMC connectivity by triggering the loop.
 		//nowPlayingLoop.enabled = true;
-		startNowPlayingLoop({enabled: true});
+		//startNowPlayingLoop({enabled: true});
 
 		// start interval to wait for GUI to finish loading
+		/*
 		listIntervalID = setInterval(function() {
 			if (guiComplete) {
 				clearInterval(listIntervalID);
@@ -1409,9 +1454,55 @@ var XBMC_GUI = function() {
 				});
 			}
 		}, 300);
+		*/
 
+		// queue dummy command to test XBMC connection - first queued command may get lost if disconnected at startup
+		self.XBMC.QueueInitMsg("testing xbmc connectivity...");
+		self.XBMC.ping();
+
+		// Load persistent data from CF.GlobalTokensJoin
+		self.XBMC.QueueInitMsg("loading saved data...");
+		CF.getJoin(CF.GlobalTokensJoin, function(j, v, tokens) {
+			keys = ["[currentList]"];
+			for ( i = 0; i < keys.length; i++) {
+
+				if ( typeof tokens[keys[i]] == "object" && tokens.hasOwnProperty(keys[i])) {
+					try {
+						obj = JSON.parse(tokens[keys[i]]) || null;
+						//console.log(obj);
+
+						// future use...
+						//switch(keys[i]) {
+						//};
+					} catch (e) {
+						consolelog("Parsing of global token " + keys[i] + " failed -> " + e);
+					} finally {
+					}
+				} else if (typeof tokens[keys[i]] == "string" || typeof tokens[keys[i]] == "number") {
+					switch(keys[i]) {
+						default:
+							// remove braces from token key sets variable in self
+							consolelog("Loaded saved variable -> self.[" + keys[i].slice(1, -1) + "] = " + tokens[keys[i]]);
+							self[keys[i].slice(1, -1)] = tokens[keys[i]];
+							break;
+					}
+				}
+
+				if (i == (keys.length - 1)){
+					CF.getJoin("d"+self.joins.connected, function(j, v, t) {
+						if ( v == 1 ) loadMediaLists();
+						else {
+							self.XBMC.QueueInitMsg("failed to connect to xbmc client..");
+							clearTimeout(preloadTimeoutID);
+							preloadTimeoutID = null;
+						}
+					});
+				}
+			}
+		});
 
 		// start 30sec timeout before loading gui without connection
+		// still needed or just wait for init msgs to finish?
 		var preloadTimeoutID = setTimeout(function(){
 			consolelog("Preloading timeout expired!!");
 			clearTimeout(preloadTimeoutID);
@@ -1421,32 +1512,31 @@ var XBMC_GUI = function() {
 		// start interval to check for preloading complete
 		var preloadIntervalID = setInterval(function() {
 			// check to see if artist list has been loaded or preload timeout expired before presenting interface
-			if ( preloadTimeoutID == null || self.XBMC.listsComplete == true ) {
+			if ( (preloadTimeoutID == null || guiComplete == true) && self.XBMC.joins.init.queue.length == 0 ) {
 				if (preloadTimeoutID == null) {
-					self.XBMC.DisplayInitMsg("xbmc connection timed out...");
+					self.XBMC.QueueInitMsg("xbmc connection timed out...");
 
-					// kill the json loop if running TODO!!
+					// TODO: kill the json loop if running?
 
-					// show XBMC config subpage
-					// set the joins to show the subpage and set the locations
-					CF.setJoin("d"+self.joins.yatse.xbmc, 1 );
 				} else {
-					self.XBMC.DisplayInitMsg("xbmc initialisation complete...");
+					self.XBMC.QueueInitMsg("xbmc initialisation complete...");
 					clearTimeout(preloadTimeoutID);
 					preloadTimeoutID = null;
 				}
 				//CF.setJoin("s"+self.joins.init, ("xbmc initialiasation complete..."));
 				clearInterval(preloadIntervalID);
 				preloadIntervalID = null;
-				// preload complete, run the callback function if req'd
+				// initialisation complete, run the callback function if req'd
 				if (typeof callback == "function") callback();
 			}
 		}, 300);
 	}
 
 	function onPreloadingComplete() {
-		CF.unwatch(CF.PreloadingCompleteEvent);
-		run(function() {
+		//CF.unwatch(CF.PreloadingCompleteEvent);
+		self.XBMC.QueueInitMsg("initialising xbmc...");
+		consolelog("PRELOADING COMPLETE - run init()");
+		init(function() {
 			setTimeout(function() {
 				console.log("Preloading complete! Present the interface...");
 				CF.setJoin("d"+self.joins.yatse.page, 1); // present the GUI after preloading of assets has completed
@@ -1460,14 +1550,15 @@ var XBMC_GUI = function() {
 		switch (join) {
 			case "d"+self.joins.connected:
 				//nowPlayingLoop.enabled = true; // reset the loop
-				if (value == 1) startNowPlayingLoop({enabled: true});
-				else {
+				if (value == 1) {
+					if (!(guiComplete)) init(); // start init again
+					else startNowPlayingLoop({enabled: true});
+				} else {
 					stopNowPlayingLoop({disconnected: true}); // force reset of GUI
 					// show disconnected popup
 					// include button to trigger WOL
-					setTimeout(function() {
-
-					}, disconnectTimeout);
+					//setTimeout(function() {
+					//}, disconnectTimeout);
 				}
 				break;
 			case "d"+self.joins.subtitles:
@@ -1499,8 +1590,11 @@ var XBMC_GUI = function() {
 					});
 				}
 				break;
-			case "d"+self.joins.yatse.xbmc:
-				CF.setJoin("d"+self.joins.yatse.mysql, value);  // keep both pages in sync
+			case "d"+self.joins.yatse.settings.xbmc:
+				CF.getJoin("d"+self.joins.yatse.settings.mysqlenabled, function(j, v, t) {
+					onJoinChange(j, v, t); // move subpages to correct positions
+					CF.setJoin("d"+self.joins.yatse.settings.mysql, value);  // keep both pages in sync
+				});
 			case "d"+self.joins.yatse.specialCommands:
 			case "d"+self.joins.yatse.pcCommands:
 			case "d"+self.joins.yatse.diagnostics.subpage:
@@ -1524,20 +1618,20 @@ var XBMC_GUI = function() {
 				console.log(tokens);
 				if ( value == 0 ) myXBMC.XBMC.Seek(tokens["[sliderval]"]);
 				break;
-			case "d"+self.joins.yatse.mysqlenabled:
+			case "d"+self.joins.yatse.settings.mysqlenabled:
 				switch(value) {
 					case 0:
 						// move xbmc subpage to y(168) and mysql to y(555)
 						CF.setProperties([
-							{join: "d"+self.joins.yatse.xbmc, y: 168},
-							{join: "d"+self.joins.yatse.mysql, y: 555}
+							{join: "d"+self.joins.yatse.settings.xbmc, y: 168},
+							{join: "d"+self.joins.yatse.settings.mysql, y: 555}
 						], 0, 1.5, CF.AnimationCurveEaseOut);
 						break;
 					case 1:
 						// move xbmc subpage to y(118) and mysql to y(635)
 						CF.setProperties([
-							{join: "d"+self.joins.yatse.xbmc, y: 118},
-							{join: "d"+self.joins.yatse.mysql, y: 635}
+							{join: "d"+self.joins.yatse.settings.xbmc, y: 118},
+							{join: "d"+self.joins.yatse.settings.mysql, y: 635}
 						], 0, 1.5, CF.AnimationCurveEaseOut);
 						break;
 				}
@@ -1550,20 +1644,38 @@ var XBMC_GUI = function() {
 		consolelog("Updating persitent config data...");
 		// request the value's from the joins
 		CF.getJoins(self.XBMC.configJoins, function(obj) {
-			console.log(obj);
+			//console.log(obj);
 			var data = {};
 			for ( var prop in obj ) {
-				if (obj[prop].hasOwnProperty("value")) data[prop] = obj[prop].value;
+				if (obj[prop].hasOwnProperty("value")) {
+					for ( var key in self.XBMC.config ) {
+						if (self.XBMC.config[key].hasOwnProperty("join") && self.XBMC.config[key].join == prop.substr(1)) data[key] = obj[prop].value;
+					}
+				}
 			}
+			//console.log(data);
 			// save the data to the Global Token to persist across sessions
 			consolelog("Setting [XBMC_Config] to = " + JSON.stringify(data));
-			CF.setToken(CF.GlobalTokens, "[XBMC_Config]", JSON.stringify(data));
+			//CF.setToken(CF.GlobalTokensJoin, "[XBMC_Config]", JSON.stringify(data));
+			CF.setJoins([{join: CF.GlobalTokensJoin, tokens: {"[XBMC_Config]": JSON.stringify(data)}}]);
 		});
+	}
+
+	function onConnectionChange(system, connected, remote) {
+		// On connected==true, the remote is a string
+		// for example: "192.168.0.16:5050"
+		// When getting initial status, if the system is not connected, remote is null.
+		if (connected) {
+			consolelog("System " + system + " connected with " + remote);
+		} else {
+			if (remote == null) consolelog("Initial status: system " + system + " is not connected.");
+			else consolelog("System " + system + " disconnected from " + remote);
+		}
 	}
 
 	function onSliderPressed(j, v, t) {
 		switch (j) {
-			case self.joins.progress:
+			case "a"+self.joins.progress:
 				consolelog("Disabling progress bar updates from XBMC...");
 				disableProgressUpdates = true;
 				break;
@@ -1576,13 +1688,13 @@ var XBMC_GUI = function() {
 
 	function onSliderReleased(j, v, t) {
 		switch (j) {
-			case self.joins.progress:
-			// send seek command to XBMC
-			self.XBMC.Seek();
-			disableProgressUpdates = false;
-			consolelog("Enabling progress bar updates from XBMC...\nAnalog progress value = " + v);
-			console.log(t);
-			break;
+			case "a"+self.joins.progress:
+				// send seek command to XBMC
+				self.XBMC.Seek( (v / 65535) * 100 );
+				disableProgressUpdates = false;
+				consolelog("Enabling progress bar updates from XBMC...\nAnalog progress value = " + v);
+				console.log(t);
+				break;
 		}
 	}
 
@@ -1634,18 +1746,18 @@ var XBMC_GUI = function() {
 					startNowPlayingLoop();
 				}, 300);
 			}
-		} else if (guiComplete && !self.XBMC.listsComplete) {
+		//} else if (guiComplete && !self.XBMC.listsComplete) {
 			// pause now playing loop while preloading remaining data
 
 			// TODO: run now playing loop LAST... AFTER all othe xbmc data is loaded - then display the GUI
 
-			stopNowPlayingLoop();
+		//	stopNowPlayingLoop();
 		} else if (nowPlayingLoop.enabled == true && nowPlayingLoop.complete == true) {
 			clearTimeout(nowPlayingLoopID);
 			nowPlayingLoopID = null;
 			//consolelog("Next pass of now playing loop running..."); // working
 			//if (!(guiComplete)) CF.setJoin("s"+self.joins.init, "getting player status from xbmc...");
-			if (!(guiComplete)) self.XBMC.DisplayInitMsg("getting player status from xbmc...");
+			if (!(guiComplete)) self.XBMC.QueueInitMsg("getting player status from xbmc...");
 			nowPlayingLoop.complete = false; // prevent multiple loops running
 			consolelog("restart of now playing loop accepted...");
 			self.XBMC.getNowPlaying();

@@ -238,6 +238,7 @@ function DisplayInitMsg() {
 			CF.setProperties({join: "s"+joins.init.join, opacity: 1}, 0, 0, CF.AnimationCurveLinear, function(j) {
 				// fade the msg out over 5secs
 				CF.setProperties({join: j, opacity: 0}, 0, Math.floor((Math.random()*5)+0.5), CF.AnimationCurveLinear, function() {
+				//CF.setProperties({join: j, opacity: 0}, 0, 2, CF.AnimationCurveLinear, function() {
 					// loop until queues are empty and preload is complete
 					DisplayInitMsg();
 				});

@@ -313,10 +313,14 @@
     <theme type="text" name=".yatse_paragraph_middle_center"><![CDATA[ color: White; font-size: 16px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: center; vertical-align: middle; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
   </themes>
   <tokens>
-    <token name="[XBMC_Movies]" value="" persist="1" />
-    <token name="[XBMC_TVShows]" value="" persist="1" />
-    <token name="[XBMC_Artists]" value="" persist="1" />
     <token name="[XBMC_Config]" value="" persist="1" />
+    <token name="[Movies]" value="" persist="1" />
+    <token name="[TVShows]" value="" persist="1" />
+    <token name="[Seasons]" value="" persist="1" />
+    <token name="[Episodes]" value="" persist="1" />
+    <token name="[Artists]" value="" persist="1" />
+    <token name="[Albums]" value="" persist="1" />
+    <token name="[Songs]" value="" persist="1" />
     <token name="[TVGuide_Channels]" value="" persist="1" />
     <token name="[TVGuide_Data]" value="" persist="1" />
     <token name="[TVGuide_Logos]" value="" persist="1" />
@@ -571,7 +575,7 @@
       </gesture>
       <img x="0" y="48" w="1920" h="1080" j="5035" clickthrough="1" refresh="0" l="0" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
       <subpage name="Yatse_Wall" x="0" y="81" j="5010" transition1="push" subtype1="fromRight" time1="1" ease1="" transition2="push" subtype2="fromRight" time2="1" ease2="" clickthrough="1" topmost="0" v="0" l="0" />
-      <subpage name="Yatse_Controls" x="0" y="80" j="5011" transition1="push" subtype1="fromLeft" time1="1" ease1="" transition2="push" subtype2="fromLeft" time2="1" ease2="" clickthrough="1" topmost="0" v="1" l="0" />
+      <subpage name="Yatse_Controls" x="0" y="80" j="5011" transition1="push" subtype1="fromLeft" time1="1" ease1="" transition2="push" subtype2="fromLeft" time2="1" ease2="" clickthrough="1" topmost="0" v="1" l="1" />
       <subpage name="Yatse_SideMenu" x="0" y="0" j="5001" transition1="moveIn" subtype1="fromLeft" time1="1" ease1="easeOut" transition2="moveIn" subtype2="fromLeft" time2="1" ease2="easeIn" clickthrough="1" topmost="1" v="0" l="0" />
       <subpage name="Yatse_Popup_Hider" x="0" y="0" j="5015" transition1="fade" subtype1="None" time1="0.5" ease1="" transition2="fade" subtype2="None" time2="0.5" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
       <subpage name="Yatse_Done_Button" x="0" y="0" j="5004" transition1="moveIn" subtype1="fromLeft" time1="1" ease1="" transition2="moveIn" subtype2="fromLeft" time2="1" ease2="" clickthrough="0" topmost="1" v="0" l="0" />
@@ -580,10 +584,10 @@
       <subpage name="Yatse_TVGuide" x="0" y="81" j="5012" transition1="push" subtype1="None" time1="1" ease1="" transition2="push" subtype2="None" time2="1" ease2="" clickthrough="1" topmost="0" v="0" l="0" />
       <subpage name="Yatse_Diagnostics" x="710" y="414" j="5008" transition1="fade" subtype1="None" time1="1" ease1="" transition2="fade" subtype2="None" time2="1" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
       <subpage name="Yatse_PC_Commands" x="1356" y="81" j="5007" transition1="moveIn" subtype1="fromTop" time1="0.5" ease1="easeOut" transition2="moveIn" subtype2="fromTop" time2="0.5" ease2="easeIn" clickthrough="0" topmost="0" v="0" l="0" />
-      <subpage name="Yatse_Topbar" x="0" y="0" j="5002" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="1" topmost="1" v="1" l="0" />
+      <subpage name="Yatse_Topbar" x="0" y="0" j="5002" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="1" topmost="1" v="1" l="1" />
       <subpage name="Yatse_Topbar_Active" x="0" y="0" j="5003" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="1" topmost="1" v="0" l="0" />
-      <subpage name="Yatse_MySQL_Settings" x="558" y="555" j="5014" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
-      <subpage name="Yatse_XBMC_Configuration" x="558" y="168" j="5013" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
+      <subpage name="Yatse_MySQL_Settings" x="558" y="479" j="5014" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
+      <subpage name="Yatse_XBMC_Configuration" x="558" y="275" j="5013" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
     </landscape>
   </page>
   <page name="Preload" j="10000" transition="fade" subtype="None" time="2" ease="" start="1">
@@ -2215,8 +2219,8 @@ Drama</txt>
       <actions>
         <action>
           <press delay="0" hold="0" repeat="0" js="myXBMC.setPage(&quot;movies&quot;)" />
-          <press delay="0" hold="1500" repeat="0" js="myXBMC.loadXBMCList(&quot;movies&quot;)" />
-          <release delay="500" js="myXBMC.toggleMenu()" />
+          <press delay="0" hold="1500" repeat="0" js="myXBMC.loadXBMCList({&quot;type&quot;: &quot;movies&quot;, &quot;force&quot;: true})" />
+          <release delay="500" js="myXBMC.toggleMenu(&quot;CLOSE&quot;)" />
         </action>
       </actions>
       <inactive s="0">Movies<img x="0" y="0" w="90" h="90">overlays\yatse_sidemenu_movies.png</img></inactive>
@@ -2230,8 +2234,8 @@ Drama</txt>
       <actions>
         <action>
           <press delay="0" hold="0" repeat="0" js="myXBMC.setPage(&quot;tvshows&quot;)" />
-          <press delay="0" hold="1500" repeat="0" js="myXBMC.loadXBMCList(&quot;tvshows&quot;)" />
-          <release delay="500" js="myXBMC.toggleMenu()" />
+          <press delay="0" hold="1500" repeat="0" js="myXBMC.loadXBMCList({type: &quot;tvshows&quot;, force: true})" />
+          <release delay="500" js="myXBMC.toggleMenu(&quot;CLOSE&quot;)" />
         </action>
       </actions>
       <inactive s="0">TV Shows<img x="0" y="0" w="90" h="90">overlays\yatse_sidemenu_tvshows.png</img></inactive>
@@ -2241,8 +2245,8 @@ Drama</txt>
       <actions>
         <action>
           <press delay="0" hold="0" repeat="0" js="myXBMC.setPage(&quot;music&quot;)" />
-          <press delay="0" hold="1500" repeat="0" js="myXBMC.loadXBMCList(&quot;music&quot;)" />
-          <release delay="500" js="myXBMC.toggleMenu()" />
+          <press delay="0" hold="1500" repeat="0" js="myXBMC.loadXBMCList({type: &quot;artists&quot;, force: true})" />
+          <release delay="500" js="myXBMC.toggleMenu(&quot;CLOSE&quot;)" />
         </action>
       </actions>
       <inactive s="0">Music<img x="0" y="0" w="90" h="90">overlays\yatse_sidemenu_music.png</img></inactive>
@@ -2252,7 +2256,7 @@ Drama</txt>
       <actions>
         <action>
           <press delay="0" hold="0" repeat="0" js="myXBMC.setPage(&quot;playlists&quot;)" />
-          <press delay="0" hold="1500" repeat="0" js="myXBMC.loadXBMCList(&quot;playlists&quot;)" />
+          <press delay="0" hold="1500" repeat="0" js="myXBMC.loadXBMCList({type: &quot;playlists&quot;, force: true})" />
           <release delay="500" js="myXBMC.toggleMenu()" />
         </action>
       </actions>
@@ -2263,7 +2267,7 @@ Drama</txt>
       <actions>
         <action>
           <press delay="0" hold="0" repeat="0" js="myXBMC.setPage(&quot;livetv&quot;)" />
-          <release delay="500" js="myXBMC.toggleMenu()" />
+          <release delay="500" js="myXBMC.toggleMenu(&quot;CLOSE&quot;)" />
         </action>
       </actions>
       <inactive s="0">Live TV<img x="0" y="0" w="90" h="90">overlays\yatse_sidemenu_livetv.png</img></inactive>
@@ -2273,7 +2277,7 @@ Drama</txt>
       <actions>
         <action>
           <press delay="0" hold="0" repeat="0" js="myXBMC.setPage(&quot;remote&quot;)" />
-          <release delay="500" js="myXBMC.toggleMenu()" />
+          <release delay="500" js="myXBMC.toggleMenu(&quot;CLOSE&quot;)" />
         </action>
       </actions>
       <inactive s="0">Remote<img x="0" y="0" w="90" h="90">overlays\yatse_sidemenu_remote.png</img></inactive>
@@ -2282,7 +2286,7 @@ Drama</txt>
     <btn j="0" x="0" y="721" w="450" h="90" t="yatse_sidemenu_item_centered" flip="None" sim="1" l="0" s="1">
       <actions>
         <action>
-          <release delay="500" js="myXBMC.toggleMenu()" />
+          <release delay="500" js="myXBMC.toggleMenu(&quot;CLOSE&quot;)" />
         </action>
       </actions>
       <inactive s="0">Virtual Keyboard<img x="0" y="0" w="90" h="90">overlays\yatse_sidemenu_keyboard.png</img></inactive>
@@ -2292,7 +2296,7 @@ Drama</txt>
       <actions>
         <action>
           <press delay="0" hold="0" repeat="0" js="CF.setJoin(&quot;d&quot;+myXBMC.joins.yatse.settings.xbmc, 1)" />
-          <release delay="0" />
+          <release delay="500" js="myXBMC.toggleMenu(&quot;CLOSE&quot;)" />
         </action>
       </actions>
       <inactive s="0">Settings<img x="0" y="0" w="90" h="90">overlays\yatse_sidemenu_settings.png</img></inactive>

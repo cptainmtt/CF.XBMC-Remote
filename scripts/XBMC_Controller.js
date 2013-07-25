@@ -5,8 +5,8 @@ var XBMC_Controller = function(params) {
 	//var TVShowsArray = null;			// Global array for TV Shows
 	//var ArtistsArray = null;			// Global array for Music
 	var playerids = { 0: 0, 1: 1, "audio" : 0, "video": 1 }; // playerid = playerids[((typeof id == "string") ? id.toLowerCase() : id)] || throw "invalid player id"
-	var mediaList = [];			// Global array for storing the media lists;
 	var mediaListIDs = [];
+
 
 	var self = {
 		config:		{
@@ -56,13 +56,13 @@ var XBMC_Controller = function(params) {
 			},
 		},
 		ids:			{
-			movies:		10,
-			tvshows:	20,
-			seasons:	21,
-			episodes:	22,
-			artists:	30,
-			albums:		31,
-			songs:		32,
+			movies:		"VideoLibrary.GetMovies",
+			tvshows:	"VideoLibrary.GetTVShows",
+			seasons:	"VideoLibrary.GetSeasons",
+			episodes:	"VideoLibrary.GetEpisodes",
+			artists:	"AudioLibrary.GetArtists",
+			albums:		"AudioLibrary.GetAlbums",
+			songs:		"AudioLibrary.GetSongs",
 		},
 		jsonBuffer:		"",
 		jsonBraceCount:		0,
@@ -86,13 +86,26 @@ var XBMC_Controller = function(params) {
 		systemName:		"XBMC",
 		listsComplete:		false,
 		configJoins:		[],
+		mediaList:		[],
+		mediaListTypes:		["movies", "tvshows", "seasons", "episodes", "artists", "albums", "songs"],
+		in_array:		function(str, arr) {
+						if (JSON.stringify(self.mediaListTypes) == JSON.stringify(arr) && str.substr(5, 11).toLowerCase() == "library.get") str = str.substr(16);
+						str = str.toLowerCase();
+						for (var i = 0; i < arr.length; i++) {
+							if ( arr[i] == str ) return true;
+						}
+						return false;
+		},
 	};
+
+	for (i = 0; i < self.mediaListTypes; i++) self.mediaList[self.mediaListTypes] = null;
 
 	var setup = false;
 
 	mediaListIDs[self.ids.movies] = "movies";
 	mediaListIDs[self.ids.tvshows] = "tvshows";
 	mediaListIDs[self.ids.artists] = "artists";
+
 
 	// --- Private Functions --- //
 
@@ -308,10 +321,14 @@ var XBMC_Controller = function(params) {
 	};
 
 	self.GetListArray = function(type) {
+		if (self.in_array(type, self.mediaListTypes)) return self.mediaList[type];
+		else return null;
+
 		//if ( typeof type == "number" ) type = mediaListIDs[type] || null; // convert type id to string
 
 		//consolelog("GetListArray(): indexOf(type) = " + self.ids.indexOf(type));
 
+		/*
 		if ( typeof type == "string" ) type = type.toLowerCase();
 		else if ( typeof type == "number" ) {
 			for (key in self.ids) {
@@ -323,7 +340,11 @@ var XBMC_Controller = function(params) {
 				}
 			}
 		}
+		*/
 
+
+
+		/*
 		switch(type) {
 			case "movies":
 			case "tvshows":
@@ -331,7 +352,7 @@ var XBMC_Controller = function(params) {
 			//case self.ids.movies:
 			//case self.ids.tvshows:
 			//case self.ids.artists:
-				return mediaList[type];
+				return self.mediaList[type];
 				break;
 
 			case "movies":
@@ -357,11 +378,16 @@ var XBMC_Controller = function(params) {
 			default:
 				consolelog("Invalid parameter passed to XBMC_Controller.GetListArray(type)");
 		}
+		*/
 	};
 
 	self.SetListArray = function(type, arr) {
 		consolelog("SetListArray(" + type + ", arr) array --v");
 		console.log(arr);
+
+		if (self.in_array(type, self.mediaListTypes)) self.mediaList[type] = (typeof arr == "object") ? arr : [];
+
+		/*
 		if ( typeof type == "string" ) type = type.toLowerCase();
 		else if ( typeof type == "number") {
 			for (var key in self.ids) {
@@ -373,13 +399,17 @@ var XBMC_Controller = function(params) {
 				}
 			}
 		}
-		switch(type) {
+
+		switch(type.toLowerCase()) {
 			case "movies":
 			case "tvshows":
+			case "seasons":
+			case "episodes":
 			case "artists":
-				mediaList[type] = (typeof arr == "object") ? arr : [];
-				break;
 
+				self.mediaList[type] = (typeof arr == "object") ? arr : [];
+				break;
+			/*
 			case "movies":
 			case self.ids.movies:
 				MoviesArray = (typeof arr == "object") ? arr : [];
@@ -392,15 +422,19 @@ var XBMC_Controller = function(params) {
 			case self.ids.artists:
 				ArtistsArray = (typeof arr == "object") ? arr : [];
 				break;
+
 			default:
 				consolelog("Invalid parameter passed to XBMC_Controller.SetListArray(type, arr)");
 		}
+		if ( (typeof self.mediaList["movies"] == "object") && (typeof self.mediaList["tvshows"] == "object") && (typeof self.mediaList["artists"] == "object")) self.listsComplete = true;
+		*/
 
-		console.log("typeof mediaList[movies] = " + (typeof mediaList["movies"]) +
-				", typeof mediaList[tvshows] = " + (typeof mediaList["tvshows"]) +
-				", typeof mediaList[artists] = " + (typeof mediaList["artists"]));
-		if ( (typeof mediaList["movies"] == "object") && (typeof mediaList["tvshows"] == "object") && (typeof mediaList["artists"] == "object")) self.listsComplete = true;
-	}
+		self.listsComplete = true;
+		for ( i = 0; i < self.mediaTypes.length; i++ ) {
+			if (typeof self.mediaList[self.mediaTypes[i]] != "object") self.listsComplete = false;
+		}
+
+	};
 /*
 	self.setListArray = function(type, arr) {
 		if ( typeof type == "string" ) type = type.toLowerCase();
@@ -902,7 +936,8 @@ var XBMC_Controller = function(params) {
 	};
 
 	self.Seek = function(val) {
-		if (val >=0 && analog <= 100 && self.player.id != null) self.json("Player.Seek", {"playerid": self.player.id, "value": val}, "Player.Seek");
+		val = (typeof val == "number") ? val : -1;
+		if (val >=0 && val <= 100 && self.player.id != null) self.json("Player.Seek", {"playerid": self.player.id, "value": val}, "Player.Seek");
 	};
 
 	self.PartyMode = function(type) {
@@ -917,40 +952,18 @@ var XBMC_Controller = function(params) {
 		} else return false;
 	};
 
-	self.getMovies = function(id, order, method) {
-		self.json("VideoLibrary.GetMovies", { "sort": {"order": ((typeof order == "string") ? order : "ascending"), "method": ((typeof method == "string") ? method : "label")}, "properties": getMediaProperties("movie")}, ((typeof id == "number") ? id : self.ids.movies));
-	};
 
 	self.get["movies"] = function(id, order, method) {
 		self.json("VideoLibrary.GetMovies", { "sort": {"order": ((typeof order == "string") ? order : "ascending"), "method": ((typeof method == "string") ? method : "label")}, "properties": getMediaProperties("movie")}, ((typeof id == "number") ? id : self.ids.movies));
-	};
-
-	self.updateMovieList = function(listJoin, json) {
-
-	};
-
-	self.getTVShows = function(id, order, method) {
-		self.json("VideoLibrary.GetTVShows", {"sort": { "order": ((typeof order == "string") ? order : "ascending"), "method": ((typeof method == "string") ? method : "label")}, "properties": getMediaProperties("tvshow")}, ((typeof id == "number") ? id : self.ids.tvshows)); // for Frodo
 	};
 
 	self.get["tvshows"] = function(id, order, method) {
 		self.json("VideoLibrary.GetTVShows", {"sort": { "order": ((typeof order == "string") ? order : "ascending"), "method": ((typeof method == "string") ? method : "label")}, "properties": getMediaProperties("tvshow")}, ((typeof id == "number") ? id : self.ids.tvshows)); // for Frodo
 	};
 
-	self.getTVSeasons = function(id, order, method, tvshowid) {
-		tvshowid = (typeof tvshowid == "undefined") ? -1 : tvshowid; // -1 = all tvshows
-		self.json("VideoLibrary.GetSeasons", {"sort": { "order": ((typeof order == "string") ? order : "ascending"), "method": ((typeof method == "string") ? method : "label")}, "params": {"tvshowid" : tvshowid}, "properties": getMediaProperties("season")}, ((typeof id == "number") ? id : self.ids.tvshows)); // for Frodo
-	};
-
 	self.get["seasons"] = function(id, order, method, tvshowid) {
 		tvshowid = (typeof tvshowid == "undefined") ? -1 : tvshowid; // -1 = all tvshows
 		self.json("VideoLibrary.GetSeasons", {"sort": { "order": ((typeof order == "string") ? order : "ascending"), "method": ((typeof method == "string") ? method : "label")}, "params": {"tvshowid" : tvshowid}, "properties": getMediaProperties("season")}, ((typeof id == "number") ? id : self.ids.tvshows)); // for Frodo
-	};
-
-	self.getTVEpisodes = function(id, order, method, tvshowid, season) {
-		tvshowid = (typeof tvshowid == "undefined") ? -1 : tvshowid; // -1 = all tvshows
-		season = (typeof season == "undefined") ? -1 : season; // -1 = all season
-		self.json("VideoLibrary.GetEpisodes", {"sort": { "order": ((typeof order == "string") ? order : "ascending"), "method": ((typeof method == "string") ? method : "label")}, "params": {"tvshowid": tvshowid, "season": season}, "properties": getMediaProperties("episode")}, ((typeof id == "number") ? id : self.ids.tvshows)); // for Frodo
 	};
 
 	self.get["episodes"] = function(id, order, method, tvshowid, season) {
@@ -959,21 +972,8 @@ var XBMC_Controller = function(params) {
 		self.json("VideoLibrary.GetEpisodes", {"sort": { "order": ((typeof order == "string") ? order : "ascending"), "method": ((typeof method == "string") ? method : "label")}, "params": {"tvshowid": tvshowid, "season": season}, "properties": getMediaProperties("episode")}, ((typeof id == "number") ? id : self.ids.tvshows)); // for Frodo
 	};
 
-	self.updateTVShowList = function(listJoin, json) {
-
-	};
-
-	self.getArtists = function(id, order, method) {
-		self.json("AudioLibrary.GetArtists", {"albumartistsonly": true, "sort": { "order": ((typeof order == "string") ? order : "ascending"), "method": ((typeof method == "string") ? method : "label") }, "properties": getMediaProperties("artist")}, ((typeof id == "number") ? id : self.ids.artists));
-	};
-
 	self.get["artists"] = function(id, order, method) {
 		self.json("AudioLibrary.GetArtists", {"albumartistsonly": true, "sort": { "order": ((typeof order == "string") ? order : "ascending"), "method": ((typeof method == "string") ? method : "label") }, "properties": getMediaProperties("artist")}, ((typeof id == "number") ? id : self.ids.artists));
-	};
-
-	self.getAlbums = function(artistID, fanart, id) {
-		self.currentArtistID = parseInt(artistID);
-		self.json("AudioLibrary.GetAlbums", { "filter":{"artistid": self.currentArtistID}, "properties": getMediaProperties("album") }, ((typeof id == "number") ? id : self.ids.albums));			// Frodo
 	};
 
 	self.get["albums"] = function(artistID, fanart, id) {
@@ -981,18 +981,9 @@ var XBMC_Controller = function(params) {
 		self.json("AudioLibrary.GetAlbums", { "filter":{"artistid": self.currentArtistID}, "properties": getMediaProperties("album") }, ((typeof id == "number") ? id : self.ids.albums));			// Frodo
 	};
 
-	self.getSongs = function(albumID, artist, albumtitle, fanart, id) {
-		self.currentAlbumID = parseInt(albumID);
-		self.json("AudioLibrary.GetSongs", { "filter":{"albumid": self.currentAlbumID}, "sort": {"order": "ascending", "method": "track"}, "properties": getMediaProperties("song")}, ((typeof id == "number") ? id : self.ids.songs));
-	};
-
 	self.get["songs"] = function(albumID, artist, albumtitle, fanart, id) {
 		self.currentAlbumID = parseInt(albumID);
 		self.json("AudioLibrary.GetSongs", { "filter":{"albumid": self.currentAlbumID}, "sort": {"order": "ascending", "method": "track"}, "properties": getMediaProperties("song")}, ((typeof id == "number") ? id : self.ids.songs));
-	};
-
-	self.updateMusicList = function(listJoin, json) {
-
 	};
 
 	/**

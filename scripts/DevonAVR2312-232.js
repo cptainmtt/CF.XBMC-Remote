@@ -13,7 +13,7 @@ LAST MOD:	May 2013
 //var DenonAVR2312 = function(systemName, ip, join) {
 var DenonAVR2312 = function(systemName) {
 	// Catch to make sure TCP system exists
-	if ( !(CF.systems.hasOwnProperty(systemName)) ) return false; // && CF.systems[systemName].type == "tcp" && CF.systems[systemName].port == 23
+	if ( !CF.systems.hasOwnProperty(systemName) ) return false; // && CF.systems[systemName].type == "tcp" && CF.systems[systemName].port == 23
 
 	var power;
 	var timeoutID = null;

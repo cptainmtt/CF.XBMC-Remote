@@ -22,7 +22,10 @@ var XBMC_GUI = function() {
 	var self = {
 		joins:	{
 			init:		245,	// S(text)
-			connected:	4001,	// D(button)
+			connected:	{
+					join:	4001,	// D(button)
+					value:	0,
+			},
 			splash:		4002,	// D(subpage)
 			progress:	4003,	// A + D(button)
 			mediaList:	4004,	// D(subpage) + L
@@ -110,7 +113,6 @@ var XBMC_GUI = function() {
 				settings:	{
 						xbmc:			5013,		// D(subpage)
 						mysql:			5014,		// D(subpage)
-						mysqlenabled:		5056,		// D(button)
 				},
 
 			},
@@ -163,7 +165,7 @@ var XBMC_GUI = function() {
 		CF.watch(CF.JoinChangeEvent, [
 			"d"+self.joins.subtitles,
 			"d"+self.joins.yatse.wall,
-			"d"+self.joins.connected,
+			"d"+self.joins.connected.join,
 			"d"+self.joins.yatse.specialCommands,
 			"d"+self.joins.yatse.pcCommands,
 			"d"+self.joins.yatse.diagnostics.subpage,
@@ -171,11 +173,10 @@ var XBMC_GUI = function() {
 			"d"+self.joins.yatse.topbar.subpage,
 			"s"+self.joins.yatse.fanart.join,
 			"s"+self.joins.yatse.np_thumbnail.join,
-			"d"+self.joins.progress,
 			"d"+self.joins.shuffle,
 			"d"+self.joins.repeat,
 			"d"+self.joins.subtitles,
-			"d"+self.joins.yatse.settings.mysqlenabled,
+			"d"+self.XBMC.config.mysqlenabled.join,
 			"d"+self.joins.yatse.settings.xbmc,
 			], onJoinChange);
 
@@ -231,16 +232,32 @@ var XBMC_GUI = function() {
 				updateStatus();
 			} catch (e) {
 				// invalid JSON string
-				// load list from XBMC
-				consolelog("Loading new " + obj.type + " list from XBMC...");
+				if ( self.XBMC.in_array(obj.type, self.XBMC.mediaListTypes) ) {
+					// check if not first load by checking guiComplete (only want cached version if not connected)
+					if ( !(guiComplete) && self.joins.connected.value == 0 )
+						updatingLists.shift(); // clear item from update list
+					else {
+						// load list from XBMC
+						consolelog("Loading new " + obj.type + " list from XBMC...");
+						self.XBMC.get[obj.type.toLowerCase()]();
+					}
+				}
+				/*
 				switch(obj.type.toLowerCase()) {
 					case "movies":
 					case "tvshows":
-					case "seasons":
+					case "seasons":"
 					case "episodes":
 					case "artists":
 					case "episodes":
 					case "songs":
+						// check if not first load by checking guiComplete (only want cached version if not connected)
+						if ( !(guiComplete) && self.joins.connected.join == 0 ) {
+							updatingLists.shift(); // clear item from update list
+							break;
+						}
+						// load list from XBMC
+						consolelog("Loading new " + obj.type + " list from XBMC...");
 						self.XBMC.get[obj.type.toLowerCase()]();
 						break;
 					case "movies":
@@ -254,6 +271,7 @@ var XBMC_GUI = function() {
 						self.XBMC.getMusicArtists();
 						break;
 				}
+				*/
 			}
 		}
 	};
@@ -262,17 +280,28 @@ var XBMC_GUI = function() {
 		volumeDevice = (typeof volumeDevice == "object") ? obj : null;
 	};
 
-	self.toggleMenu = function() {
-		CF.getJoin("d"+self.joins.yatse.sidemenu.subpage, function(j, v, t) {
-			CF.setJoin("d"+self.joins.yatse.sidemenu.subpage, (v === 1) ? 0 : 1);
-		});
+	self.toggleMenu = function(force) {
+		switch(force.toLowerCase()) {
+			case "open":
+			case "on":
+				CF.setJoin("d"+self.joins.yatse.sidemenu.subpage, 1);
+				break;
+			case "close":
+			case "off":
+				CF.setJoin("d"+self.joins.yatse.sidemenu.subpage, 0);
+				break;
+			default:
+				CF.getJoin("d"+self.joins.yatse.sidemenu.subpage, function(j, v, t) {
+					CF.setJoin("d"+self.joins.yatse.sidemenu.subpage, (v === 1) ? 0 : 1);
+				});
+		}
 	};
 
 	self.setPage = function(page) {
 		page = (typeof page == "string") ? page.toLowerCase() : undefined;
-		switch(page) {
+		switch(page.toLowerCase()) {
 			case "movies":
-			case "tvshow":
+			case "tvshows":
 			case "seasons":
 			case "episodes":
 			case "artists":
@@ -281,27 +310,6 @@ var XBMC_GUI = function() {
 				// TODO: group all movies/tvshows/artists/etc into one case block
 				self.loadXBMCList({type: page}); // need to fix so this does not need executing, should automatically be called if the movie list has not been pre-loaded
 				self.buildWall(page);
-				self.setPage("wall");
-				self.currentList = page;
-				break;
-			case "tvshows":
-				self.loadXBMCList({type: "tvshows"});
-				self.setPage("wall");
-				self.currentList = page;
-				break;
-			//case "music":
-			case "artists":
-				self.loadXBMCList({type: "artists"});
-				self.setPage("wall");
-				self.currentList = "artists";
-				break;
-			case "albums":
-				self.loadXBMCList({type: "albums"});
-				self.setPage("wall");
-				self.currentList = page;
-				break;
-			case "songs":
-				self.loadXBMCList({type: "songs"});
 				self.setPage("wall");
 				self.currentList = page;
 				break;
@@ -521,17 +529,19 @@ var XBMC_GUI = function() {
 
 			switch(json.id) {
 				case self.XBMC.ids.movies:
-					token = "Movies";
-					break;
+					//token = "Movies";
+					//break;
 				case self.XBMC.ids.tvshows:
 				case self.XBMC.ids.seasons:
 				case self.XBMC.ids.episodes:
-					token = "TVShows";
-					break;
+					//token = "TVShows";
+					//break;
 				case self.XBMC.ids.artists:
 				case self.XBMC.ids.albums:
 				case self.XBMC.ids.songs:
-					token = "Artists";
+					//token = "Artists";
+					//break;
+					token = json.id.substr(16);
 					break;
 				default:
 					throw "Incorrect id passed...";
@@ -544,6 +554,8 @@ var XBMC_GUI = function() {
 			var rowCount = 0;
 			var list = [];
 			var rowItems = {};
+			var child = null;
+			var parent = null;
 			maxPerRow = 9;
 			delete artistid;
 			delete albumid;
@@ -551,17 +563,47 @@ var XBMC_GUI = function() {
 			delete season;
 			consolelog("updating Media array for " + token);
 			console.log(json);
+
+			var padRow = function() {
+
+				//if (itemCount < 9 && json.result.limits.total > 0 && rowItems.length > 0 ) {
+				// 9 items per row, only pad if the row isnt empty
+				if (itemCount < 9 && rowItems.length > 0 ) {
+					// hide/clear remaining items in row
+					t = {
+						"[id]": "",
+						"[type]": "",
+					};
+					while (itemCount < maxPerRow) {
+						rowItems["d"+(self.joins.firstWatched+itemCount)]	= 0;
+						rowItems["s"+(self.joins.firstTitle+itemCount)]		= "";
+						rowItems["s"+(self.joins.firstYear+itemCount)]		= "";
+						rowItems["s"+(self.joins.firstThumbnail+itemCount)]	= "";
+						rowItems["d"+(self.joins.firstThumbnail+itemCount)]	= { // button for selecting item
+							value: 0,
+							tokens: t,
+						};
+						itemCount++;
+					}
+
+					// add last row to arry
+					if (child == null) list.push(rowItems);
+					else if (parent == null) list[child].push(rowItems);
+					else list[parent][child].push(rowItems);
+
+					//list[albumid/artistd/etc] = rowItems
+				}
+			};
+
 			for (var i = 0; i < json.result.limits.total; i++) {
 				if (itemCount == maxPerRow) {
 					itemCount = 0;
 					rowCount++;
-					//rowItems[rowCount] = {};
-					//consolelog("Pushing filled rowItems to MoviesArray...");
-					//console.log(rowItems);
-					//consolelog("\n");
 
-					//self.XBMC.pushListArray(json.id, rowItems);
-					list.push(rowItems);
+					if (child == null) list.push(rowItems);
+					else if (parent == null) list[child].push(rowItems);
+					else list[parent][child].push(rowItems);
+
 					rowItems = {}; // reset horizontal row list
 				}
 
@@ -590,6 +632,10 @@ var XBMC_GUI = function() {
 						var type = "tvshow";
 						break;
 					case self.XBMC.ids.seasons:
+						if ( child != json.result.seasons[i].tvshowid ) {
+							child = json.result.seasons[i].tvshowid;
+							padRow();
+						}
 						// "season", "tvshowid", "showtitle", "title", "year", "playcount", "episode", "thumbnail", "file", "art", "watchedepisodes"
 						var id = json.result.seasons[i].season; // json.result.id
 						var thumbnail = json.result.seasons[i].thumbnail;
@@ -602,6 +648,16 @@ var XBMC_GUI = function() {
 						if ( !(rowItems.hasOwnProperty("tvshowid")) ) rowItems["tvshowid"] = json.result.seasons[i].tvshowid;
 						break;
 					case self.XBMC.ids.episodes:
+
+
+						// SEASON ID NEED CHECKING!! OR SOMEWAY TO GROUP ARRAY INTO SEASONS!!
+
+
+						if ( child != json.result.episodes[i].season ) {
+							child = json.result.episodes[i].season;
+							parent = json.result.episodes[i].tvshowid;
+							padRow();
+						}
 						// "episodeid", "season", "tvshowid", "thumbnail", "showtitle", "firstaired", "episode", "resume", "file", "title", "playcount", "art"
 						var id = json.result.episodes[i].episodeid;
 						var thumbnail = json.result.episodes[i].thumbnail;
@@ -627,6 +683,10 @@ var XBMC_GUI = function() {
 						var type = "artist";
 						break;
 					case self.XBMC.ids.albums:
+						if ( child != json.result.albums[i].artistid ) {
+							child = json.result.albums[i].artistid;
+							padRow();
+						}
 						// "artistid", "albumartistid", "albumid", "thumbnail", "title", "fanart", "year", "playcount"
 						var id = json.result.albums[i].albumid;
 						var thumbnail = json.result.albums[i].thumbnail;
@@ -639,6 +699,11 @@ var XBMC_GUI = function() {
 						if ( !(rowItems.hasOwnProperty("artistid")) ) rowItems["artistid"] = json.result.albums[i].artistid; // var albumid = json.result.albums[i].albumartistid;
 						break;
 					case self.XBMC.ids.songs:
+						if ( child != json.result.songs[i].albumid ) {
+							child = json.result.songs[i].albumid;
+							parent = json.result.songs[i].artistid;
+							padRow();
+						}
 						// "thumbnail", "title", "track", "file", "albumartistid", "albumid", "songid", "playcount"
 						var id = json.result.songs[i].songid;
 						var thumbnail = json.result.songs[i].thumbnail;
@@ -673,30 +738,8 @@ var XBMC_GUI = function() {
 				itemCount++;
 			}
 
-			if (itemCount < 9 && json.result.limits.total > 0) {
-				// hide/clear remaining items in row
-				t = {
-					"[id]": "",
-					//"[file]": null,
-					//"[fanart]": null,
-					"[type]": "",
-				};
-				while (itemCount < maxPerRow) {
-					rowItems["d"+(self.joins.firstWatched+itemCount)]	= 0;
-					rowItems["s"+(self.joins.firstTitle+itemCount)]		= "";
-					rowItems["s"+(self.joins.firstYear+itemCount)]		= "";
-					rowItems["s"+(self.joins.firstThumbnail+itemCount)]	= "";
-					rowItems["d"+(self.joins.firstThumbnail+itemCount)]	= { // button for selecting item
-						value: 0,
-						tokens: t
-					};
-					itemCount++;
-				}
+			padRow();
 
-				// add last row to arry
-				//self.XBMC.pushListArray(json.id, rowItems);
-				list.push(rowItems);
-			}
 			console.log(list);
 			self.XBMC.SetListArray(json.id, list);
 
@@ -1313,7 +1356,7 @@ var XBMC_GUI = function() {
 						//nowPlayingLoop.enabled = true;
 						startNowPlayingLoop({enabled: true});
 						//updateStatus();
-						//CF.setJoin("s"+self.joins.connected, "http://www.southernelectriq.com.au/commandfusion/raglan/images/yatse_status_green.png"); // connected, playing
+						//CF.setJoin("s"+self.joins.connected.join, "http://www.southernelectriq.com.au/commandfusion/raglan/images/yatse_status_green.png"); // connected, playing
 						break;
 					case "Player.OnPause":
 						consolelog("Player.OnPause response received...[player.id = " + json.params.data.player.playerid + ", speed = " + json.params.data.player.speed +"]");
@@ -1365,7 +1408,7 @@ var XBMC_GUI = function() {
 						case "pong":
 							// not needed if using connected join?
 							CFlog("Ping response received");
-							CF.setJoin("d"+self.joins.connected, 1); // force connected join update
+							CF.setJoin("d"+self.joins.connected.join, 1); // force connected join update
 							break;
 						default:
 							//console.log(json);
@@ -1374,7 +1417,7 @@ var XBMC_GUI = function() {
 								// update player speed and status indicator
 								self.XBMC.player.speed = json.result.speed;
 								updateStatus();
-								//CF.setJoin("s"+self.joins.connected, "http://www.southernelectriq.com.au/commandfusion/raglan/images/yatse_status_" + ((self.XBMC.player.speed == 0) ? "white" : "green") + ".png"); // connected, idle
+								//CF.setJoin("s"+self.joins.connected.join, "http://www.southernelectriq.com.au/commandfusion/raglan/images/yatse_status_" + ((self.XBMC.player.speed == 0) ? "white" : "green") + ".png"); // connected, idle
 								consolelog("Current player speed updated to = " + self.XBMC.player.speed);
 							} else {
 								CFlog("Nothing required from JSON response in jsonCallback()");
@@ -1391,36 +1434,25 @@ var XBMC_GUI = function() {
 			self.XBMC.QueueInitMsg("syncing xbmc volume...");
 			self.getVolume();
 
-			startNowPlayingLoop();
+			startNowPlayingLoop({enabled: true});
 		}
 
 		function loadMediaLists() {
-			CF.getJoin(CF.GlobalTokensJoin, function(j, v, tokens) {
-				for (var key in tokens) {
-					if (tokens.hasOwnProperty(key)) {
-						switch(key) {
-							case "[XBMC_Movies]":
-							case "[XBMC_TVShows]":
-							case "[XBMC_Artists]":
-								//type = key.substring(6, key.length - 1).toLowerCase();
-								//consolelog("type = " + type);
-								listType = key.substring(6, key.length - 1).toLowerCase();
-								self.loadXBMCList( { type: listType, list: tokens[key] } );
-								break;
-						}
-					}
-				}
-				consolelog("THIS SHOULDNT BE SEEN BEFORE THE MEDIA LISTS HAVE BEEN LOADED!!");
+			//types = ["movies", "tvshows", "artists"];
+			QueueInitMsg("refreshing media lists from xbmc...");
+			for ( var i = 0; i < self.XBMC.mediaListTypes.length; i++ )
+				self.loadXBMCList( { type: self.XBMC.mediaListTypes[i], force: true } ); // force refresh of lists from XBMC
 
-				var id = setInterval(function() {
-					if (self.XBMC.listsComplete) {
-						clearInterval(id);
-						id = null;
-						delete id;
-						syncVolume();
-					}
-				}, 300);
-			});
+			consolelog("THIS SHOULDNT BE SEEN BEFORE THE MEDIA LISTS HAVE BEEN LOADED!!"); // remove once tested
+
+			var id = setInterval(function() {
+				if (self.XBMC.listsComplete) {
+					clearInterval(id);
+					id = null;
+					delete id;
+					syncVolume();
+				}
+			}, 300);
 		}
 
 		//resetGUI();  // not 100% sure if needed here as called again in onStopNowPlaying()
@@ -1462,39 +1494,50 @@ var XBMC_GUI = function() {
 
 		// Load persistent data from CF.GlobalTokensJoin
 		self.XBMC.QueueInitMsg("loading saved data...");
+
 		CF.getJoin(CF.GlobalTokensJoin, function(j, v, tokens) {
-			keys = ["[currentList]"];
+			// token to load
+			keys = ["currentList"];
+			keys = keys.concat(self.XBMC.mediaListTypes);
 			for ( i = 0; i < keys.length; i++) {
-
-				if ( typeof tokens[keys[i]] == "object" && tokens.hasOwnProperty(keys[i])) {
-					try {
-						obj = JSON.parse(tokens[keys[i]]) || null;
-						//console.log(obj);
-
-						// future use...
-						//switch(keys[i]) {
-						//};
-					} catch (e) {
-						consolelog("Parsing of global token " + keys[i] + " failed -> " + e);
-					} finally {
+				if (self.XBMC.in_array(keys[i], self.XBMC.mediaListTypes)) {
+					// load media list
+					if (tokens["[" + keys[i] + "]"] != "") {
+						// token contains data
+						//listType = key.substring(6, key.length - 1).toLowerCase();
+						self.loadXBMCList( { type: keys[i], list: tokens["[" + keys[i] + "]"] } );
 					}
-				} else if (typeof tokens[keys[i]] == "string" || typeof tokens[keys[i]] == "number") {
-					switch(keys[i]) {
-						default:
-							// remove braces from token key sets variable in self
-							consolelog("Loaded saved variable -> self.[" + keys[i].slice(1, -1) + "] = " + tokens[keys[i]]);
-							self[keys[i].slice(1, -1)] = tokens[keys[i]];
-							break;
-					}
+				// load saved variable as string
+				} else self[keys[i]] = tokens["[" + keys[i] + "]"]; // save as self.key = token value
+
+				/*
+				switch(keys[i]) {
+					case "[Movies]":
+					case "[TVShows]":
+					case "[XBMC_Artists]":
+						if (tokens["[" + keys[i] + "]"] != "") {
+							// token contains data
+							listType = key.substring(6, key.length - 1).toLowerCase();
+							self.loadXBMCList( { type: listType, list: tokens[key[i]] } );
+						}
+						break;
+					default:
+						// remove braces from token key sets variable in self
+						consolelog("Loaded saved variable -> self.['[" + keys[i] + "]'] = " + tokens["[" + keys[i] + "]"]);
+						self[keys[i]] = tokens["[" + keys[i] + "]"];
+						break;
 				}
+				*/
+
 
 				if (i == (keys.length - 1)){
-					CF.getJoin("d"+self.joins.connected, function(j, v, t) {
-						if ( v == 1 ) loadMediaLists();
+					CF.getJoin("d"+self.joins.connected.join, function(j, v, t) {
+						if ( v == 1 ) loadMediaLists(); // will be force loaded once connected
 						else {
 							self.XBMC.QueueInitMsg("failed to connect to xbmc client..");
 							clearTimeout(preloadTimeoutID);
 							preloadTimeoutID = null;
+							updateStatus();
 						}
 					});
 				}
@@ -1507,6 +1550,7 @@ var XBMC_GUI = function() {
 			consolelog("Preloading timeout expired!!");
 			clearTimeout(preloadTimeoutID);
 			preloadTimeoutID = null;
+			self.XBMC.QueueInitMsg("xbmc connection timed out...");
 		}, 30000);
 
 		// start interval to check for preloading complete
@@ -1514,7 +1558,6 @@ var XBMC_GUI = function() {
 			// check to see if artist list has been loaded or preload timeout expired before presenting interface
 			if ( (preloadTimeoutID == null || guiComplete == true) && self.XBMC.joins.init.queue.length == 0 ) {
 				if (preloadTimeoutID == null) {
-					self.XBMC.QueueInitMsg("xbmc connection timed out...");
 
 					// TODO: kill the json loop if running?
 
@@ -1540,7 +1583,8 @@ var XBMC_GUI = function() {
 			setTimeout(function() {
 				console.log("Preloading complete! Present the interface...");
 				CF.setJoin("d"+self.joins.yatse.page, 1); // present the GUI after preloading of assets has completed
-				startNowPlayingLoop({enabled: true});	// restart now playing loop
+
+				//startNowPlayingLoop({enabled: true});	// restart now playing loop
 			}, 500);
 		});
 	}
@@ -1548,7 +1592,7 @@ var XBMC_GUI = function() {
 	function onJoinChange(join, value, tokens) {
 		consolelog("onJoinChange(" + join + ", " + value + ", " + tokens + ")");
 		switch (join) {
-			case "d"+self.joins.connected:
+			case "d"+self.joins.connected.join:
 				//nowPlayingLoop.enabled = true; // reset the loop
 				if (value == 1) {
 					if (!(guiComplete)) init(); // start init again
@@ -1591,7 +1635,7 @@ var XBMC_GUI = function() {
 				}
 				break;
 			case "d"+self.joins.yatse.settings.xbmc:
-				CF.getJoin("d"+self.joins.yatse.settings.mysqlenabled, function(j, v, t) {
+				CF.getJoin("d"+self.XBMC.config.mysqlenabled.join, function(j, v, t) {
 					onJoinChange(j, v, t); // move subpages to correct positions
 					CF.setJoin("d"+self.joins.yatse.settings.mysql, value);  // keep both pages in sync
 				});
@@ -1602,7 +1646,7 @@ var XBMC_GUI = function() {
 				CF.setJoin("d"+self.joins.yatse.popupHider, value);
 				break;
 			case "d"+self.joins.playing:
-				CF.setJoin("s"+self.joins.yatse.transport_playpause, "images/yatse_transport_" + ((value == 1) ? "pause" : "play") + ".png");
+				CF.setJoin("s"+self.joins.yatse.transport_playpause, "images\\yatse_transport_" + ((value == 1) ? "pause" : "play") + ".png");
 				break;
 			case "d"+self.joins.yatse.topbar.subpage:
 				CF.setJoin("d"+self.joins.yatse.topbar.done, value); // sync done button with activated topbar state
@@ -1613,25 +1657,20 @@ var XBMC_GUI = function() {
 			case "s"+self.joins.yatse.np_thumbnail.join:
 				self.joins.yatse.np_thumbnail.url = value;
 				break;
-			case "d"+self.joins.progress:
-				consolelog("progress digital join changed");
-				console.log(tokens);
-				if ( value == 0 ) myXBMC.XBMC.Seek(tokens["[sliderval]"]);
-				break;
-			case "d"+self.joins.yatse.settings.mysqlenabled:
+			case "d"+self.XBMC.config.mysqlenabled.join:
 				switch(value) {
 					case 0:
-						// move xbmc subpage to y(168) and mysql to y(555)
+						// move xbmc subpage to y(275) and mysql to y(479)
 						CF.setProperties([
-							{join: "d"+self.joins.yatse.settings.xbmc, y: 168},
-							{join: "d"+self.joins.yatse.settings.mysql, y: 555}
+							{join: "d"+self.joins.yatse.settings.xbmc, y: 275},
+							{join: "d"+self.joins.yatse.settings.mysql, y: 479}
 						], 0, 1.5, CF.AnimationCurveEaseOut);
 						break;
 					case 1:
-						// move xbmc subpage to y(118) and mysql to y(635)
+						// move xbmc subpage to y(88) and mysql to y(666)
 						CF.setProperties([
-							{join: "d"+self.joins.yatse.settings.xbmc, y: 118},
-							{join: "d"+self.joins.yatse.settings.mysql, y: 635}
+							{join: "d"+self.joins.yatse.settings.xbmc, y: 88},
+							{join: "d"+self.joins.yatse.settings.mysql, y: 666}
 						], 0, 1.5, CF.AnimationCurveEaseOut);
 						break;
 				}
@@ -1690,10 +1729,14 @@ var XBMC_GUI = function() {
 		switch (j) {
 			case "a"+self.joins.progress:
 				// send seek command to XBMC
-				self.XBMC.Seek( (v / 65535) * 100 );
+				try {
+					self.XBMC.Seek( (v / 65535) * 100 );
+				} catch (e) {
+					consolelog("exception caught onSliderReleased() - " + e);
+				}
+
 				disableProgressUpdates = false;
-				consolelog("Enabling progress bar updates from XBMC...\nAnalog progress value = " + v);
-				console.log(t);
+				consolelog("Enabling progress bar updates from XBMC...\nAnalog progress value = " + v + "\nPercentage progress = " + (v / 65535) * 100 + "%");
 				break;
 		}
 	}
@@ -1793,15 +1836,15 @@ var XBMC_GUI = function() {
 	}
 
 	function updateStatus() {
-		CF.getJoins(["d"+self.joins.connected, CF.GlobalTokensJoin], function(joins) {
+		CF.getJoins(["d"+self.joins.connected.join, CF.GlobalTokensJoin], function(joins) {
 			consolelog("updatingLists.length = " + updatingLists.length);
-			if ( parseInt(joins["d"+self.joins.connected].value) === 0 ) status = "red";			// disconnected
+			if ( parseInt(joins["d"+self.joins.connected.join].value) === 0 ) status = "red";			// disconnected
 			else if (updatingLists.length > 0) status = "blue";						// connected, updating
 			else if (self.XBMC.player.speed == 0 || self.XBMC.player.speed == null) status = "white";	// connected, idle
 			else status = "green";										// connected, active
 
-			CF.setJoin("s"+self.joins.connected, "http://www.southernelectriq.com.au/commandfusion/raglan/images/yatse_status_" + status + ".png");
-			CF.setJoin("d"+self.joins.playing, (self.XBMC.player.speed == 0) ? 0 : 1); // update play/pause button state
+			CF.setJoin("s"+self.joins.connected.join, "http://www.southernelectriq.com.au/commandfusion/raglan/images/yatse_status_" + status + ".png");
+			CF.setJoin("d"+self.joins.playing, (self.XBMC.player.speed == 1) ? 1 : 0); // update play/pause button state
 		});
 
 	}

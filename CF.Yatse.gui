@@ -2649,8 +2649,8 @@ Drama</txt>
     <txt j="5080" x="21" y="219" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">000.000.000.000</txt>
     <txt j="5081" x="21" y="274" w="170" h="30" t="yatse_diag_detail_info" wrap="False" l="0">8080</txt>
     <txt j="5084" x="21" y="494" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">?</txt>
-    <img x="0" y="96" w="632" h="3" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_underline.png</img>
-    <btn j="0" x="0" y="1" w="502" h="95" t="yatse_commands_title" flip="None" sim="0" l="0" s="1">
+    <img x="1" y="96" w="632" h="3" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_underline.png</img>
+    <btn j="0" x="1" y="1" w="632" h="95" t="yatse_commands_title" flip="None" sim="0" l="0" s="1">
       <inactive s="0">Diagnostics</inactive>
       <active s="0">Diagnostics</active>
     </btn>
@@ -2673,7 +2673,7 @@ Drama</txt>
     <img x="211" y="99" w="1" h="481" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <img x="0" y="0" w="1" h="580" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <img x="633" y="0" w="1" h="580" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
-    <img x="0" y="0" w="6345" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="0" y="0" w="634" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <img x="2" y="634" w="500" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <txt j="0" x="21" y="364" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Password</txt>
     <txt j="5083" x="21" y="384" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">xbmc</txt>

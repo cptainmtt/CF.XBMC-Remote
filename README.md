@@ -1,5 +1,7 @@
-CF.Yatse
-========
+CF.XBMC Remote
+==============
 
-A command fusion project based on the Yatse remote for Android.
-Still very  much a work in progress...
+An XBMC remote for command fusion (www.commandfusion.com)
+Based on the functionality of the Yatse (yatse.leetzone.org) app for android.
+
+

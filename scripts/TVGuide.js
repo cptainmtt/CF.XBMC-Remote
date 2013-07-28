@@ -94,7 +94,7 @@ var TVGuide = function( params, listJoin ) {
 		loading:		false,
 		guideTime:		Date.now(),
 		init:		{
-						guide:		[],
+						queue:		[],
 		},
 		//info:			[],
 	};
@@ -1347,8 +1347,12 @@ var TVGuide = function( params, listJoin ) {
 	};
 
 	// Public functions
-	function DisplayInitMsg(msg) {
-		if (typeof msg == "object") self.init.queue.push(msg);
+	function QueueInitMsg(msg) {
+		try {
+			if (typeof msg == "object") self.init.queue.push(msg);
+		} catch (e) {
+			consolelog("The TV Guide initialisation message queue has been disabled - " + e);
+		}
 	}
 
 	self.setup();

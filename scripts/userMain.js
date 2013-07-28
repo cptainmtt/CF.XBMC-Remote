@@ -96,7 +96,7 @@ function startXBMC(action) {
 	//CF.runCommand(null, "Wake PVRBOX");	// send WOL packet to PVR-BOX
 	WOL("00:22:4D:7B:38:36"); // wake PVR-BOX (media server)
 	CF.runCommand(null, "Relay 1 CLOSE");	// turn on power to AV equipment
-	myXBMC.XBMC.ping();
+	myXBMC.XBMC.Ping();
 	xbmcID = setInterval(function() {
 		CF.getJoin("d"+myXBMC.joins.connected, function(join, value, tokens) {
 			if (value === 1) {
@@ -105,10 +105,10 @@ function startXBMC(action) {
 
 				setTimeout(function() {CF.runCommand(null, ((action == "music") ? "TV Power Off" : "TV Power On"))}, 100);
 				setTimeout(function() {
-					myAmp.action("POWER", "ON");
+					myXBMC.volumeDevice.action("POWER", "ON");
 					aID = setInterval(function() {
-						myAmp.query("POWER");
-						CF.getJoin("d"+myAmp.joins.power, function(join, value, tokens) {
+						myXBMC.volumeDevice.query("POWER");
+						CF.getJoin("d"+myXBMC.volumeDevice.joins.power, function(join, value, tokens) {
 							if (value === 1) {
 								// Amp power is on
 								clearInterval(aID);
@@ -142,11 +142,11 @@ function systemOff() {
 				CF.runCommand(null, "Shutdown PVRBOX");
 			}, 100);
 			CF.runCommand(null, "TV Power Off");
-			myAmp.action("POWER", "OFF");
+			myXBMC.volumeDevice.action("POWER", "OFF");
 			setTimeout(function() {
 				CF.runCommand(null, "Relay 1 OPEN");	// turn off power to AV equipment
 				CF.setJoins([
-					{ join: "d"+myAmp.joins.connected, value: 0},
+					{ join: "d"+myXBMC.volumeDevice.joins.connected, value: 0},
 					{ join: "d"+myXBMC.joins.connected, value: 0},
 				]);
 			}, 10000);
@@ -160,7 +160,7 @@ function onPageFlip(from, to, orientation) {
 			//myTVGuide.build();
 			break;
 		case "XBMC":
-			myXBMC.XBMC.getNowPlaying(myXBMC.joins.nowPlaying.file); // force check to see if anything is playing
+			myXBMC.XBMC.GetNowPlaying(myXBMC.joins.nowPlaying.file); // force check to see if anything is playing
 			break;
 	}
 }
@@ -178,6 +178,10 @@ function onPreloadingComplete() {
 	//CF.unwatch(CF.PreloadingCompleteEvent);
 	setTimeout(function() {
 		preloadComplete = true;
+		// disable more message being added to queues
+		delete myXBMC.XBMC.joins.init.queue;
+		delete myXBMC.volumeDevice.init.queue;
+		delete myTVGuide.init.queue;
 	}, 500);
 	CF.log("PRELOADING COMPLETE");
 	//clearInterval(initLoopID);
@@ -199,9 +203,9 @@ function DisplayInitMsg() {
 		var msg = null;
 
 		try  {
-			msg = myAmp.init.queue.shift()
+			msg = myXBMC.volumeDevice.init.queue.shift()
 			if (msg == undefined) throw "No msgs waiting from amp";
-			CF.log("Denon queue length = " +myAmp.init.queue.length);
+			CF.log("Denon queue length = " + myXBMC.volumeDevice.init.queue.length);
 		} catch (e) {
 			try {
 				msg = myTVGuide.init.queue.shift();
@@ -237,7 +241,7 @@ function DisplayInitMsg() {
 			CF.setJoin("s"+joins.init.join, msg);
 			CF.setProperties({join: "s"+joins.init.join, opacity: 1}, 0, 0, CF.AnimationCurveLinear, function(j) {
 				// fade the msg out over 5secs
-				CF.setProperties({join: j, opacity: 0}, 0, Math.floor((Math.random()*5)+0.5), CF.AnimationCurveLinear, function() {
+				CF.setProperties({join: j, opacity: 0}, 0, Math.floor((Math.random()*4)+1), CF.AnimationCurveLinear, function() {
 				//CF.setProperties({join: j, opacity: 0}, 0, 2, CF.AnimationCurveLinear, function() {
 					// loop until queues are empty and preload is complete
 					DisplayInitMsg();
@@ -274,17 +278,59 @@ CF.userMain = function() {
 		//var myDial = new Dial("s200", {srcJoin: "s199", maxTime: 0.2, minTime: 0.1, angleOffset: 180, maxAngle: 300});
 		//CF.setProperties({join:"s"+joins.volume_knob["join"], zrotation: -150});
 
-		myAmp = new DenonAVR2312("DenonAVR2312-RS232");
+		//myAmp = new DenonAVR2312("DenonAVR2312-RS232");
 		myDial = new Dial({level: "s"+joins.volume.level, knob: "s"+joins.volume.knob, touch: "s"+joins.volume.touch, maxTime: 0.2, minTime: 0.1, angleOffset: -30, maxAngle: 300});
 		myTVGuide = new TVGuide( {hours: 4 } );
 		//myTVServer = new ArgusTV({"address": "192.168.10.100"});
 		myXBMC = new XBMC_GUI(); // create using default settings
-		myXBMC.configureVolume(myAmp);
-		myXBMC.setup();
+		//myXBMC.configureVolume("a string");
+		myXBMC.configureVolume(new DenonAVR2312("DenonAVR2312-RS232"));
+		try {
+			myXBMC.setup();
+		} catch (e) { console.log("myXBMC global error caught in CF.userMain() - " + e) }
 
-		DisplayInitMsg();
+		try {
+			DisplayInitMsg();
+		} catch (e) { console.log("DisplayInitMSG error - " + e) }
 
+		myvar = null;
+		CF.log("BOOLEAN TESTING:\n" +
+			"----------------\n" +
+			"!0 = " + (!0) + "\n" +
+			"!1 = " + (!1) + "\n" +
+			"!null = " + (!myvar) + "\n" +
+			"Boolean(null) = " + Boolean(myvar) + "\n" +
+			"(myvar == null) = " + (myvar == null) + "\n" +
+			"(myvar != null) = " + (myvar != null) + "\n" +
+			"(myvar === null) = " + (myvar === null) + "\n" +
+			"(myvar !== null) = " + (myvar !== null) + "\n" +
+			"(myvar == 0) = " + (myvar == 0) + "\n" +
+			"(myvar != 0) = " + (myvar != 0) + "\n" +
+			"(myvar === 0) = " + (myvar === 0) + "\n" +
+			"(myvar !== 0) = " + (myvar !== 0) + "\n" +
+			"(myvar == 'string') = " + (myvar == 'string') + "\n" +
+			"(myvar != 'string') = " + (myvar != 'string') + "\n" +
+			"(myvar === 'string') = " + (myvar === 'string') + "\n" +
+			"(myvar !== 'string') = " + (myvar !== 'string') + "\n" +
+			"('string' == null) = " + ('string' == null) + "\n" +
+			"('string' != null) = " + ('string' != null) + "\n" +
+			"('string' === null) = " + ('string' === null) + "\n" +
+			"('string' !== null) = " + ('string' !== null) + "\n" +
+			"(0 == null) = " + (0 == null) + "\n" +
+			"(0 != null) = " + (0 != null) + "\n" +
+			"(0 === null) = " + (0 === null) + "\n" +
+			"(0 !== null) = " + (0 !== null) + "\n");
 
+		CF.log("PARSE TESTING:\n" +
+			"--------------\n" +
+			"parseFloat(19.76) = " + parseFloat(19.76) +"\n" +
+			"parseFloat('19.74%') = " + parseFloat("19.74%") + "\n");
 
+		CF.log("ARRAY & OBJECT TESTING:\n");
+		try {
+			CF.log("undefined[0] = " + (undefined)[0] + "\n");
+		} catch (e) {
+			CF.log("Exception caught testing undefined[0]");
+		}
 
 };

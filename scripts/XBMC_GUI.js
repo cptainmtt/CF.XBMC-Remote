@@ -5,7 +5,7 @@ var XBMC_GUI = function() {
 	var guiComplete = false;
 	var updatingLists = [];
 	var setup = null;
-	var volumeDevice = null; // set to external volume device module using self.configureVolume()
+	//var volumeDevice = null; // set to external volume device module using self.configureVolume()
 	var nowPlayingLoopID = null;
 	var selectedItemID = null; // eg: tvshowid, seasonid, artistid, albumid - dont think need to worry about songid/episodeid as not drilling down that far yet..
 	var disableProgressUpdates = false;
@@ -22,10 +22,6 @@ var XBMC_GUI = function() {
 	var self = {
 		joins:	{
 			init:		245,	// S(text)
-			connected:	{
-					join:	4001,	// D(button)
-					value:	0,
-			},
 			splash:		4002,	// D(subpage)
 			progress:	4003,	// A + D(button)
 			mediaList:	4004,	// D(subpage) + L
@@ -63,7 +59,13 @@ var XBMC_GUI = function() {
 					tvshows_info:		5021,
 					music_info:		5021,
 					playlists_info:		5023,
-					np_thumbnail:		5025,
+					np_thumbnail:		{
+								join:		5025,
+								x:		null,
+								y:		null,
+								w:		null,
+								h:		null,
+					},
 					np_primary_info:	5026,
 					np_secondary_info:	5027,
 				},
@@ -73,9 +75,9 @@ var XBMC_GUI = function() {
 					resume:			5050,
 				},
 
-				specialCommands:	5005,
-				subCommands:		5006,
-				pcCommands:		5007,
+				special_commands:	5005,
+				sub_commands:		5006,
+				pc_commands:		5007,
 				diagnostics:		{
 							subpage:	5008,
 							address:	5080,
@@ -88,7 +90,12 @@ var XBMC_GUI = function() {
 				wall:			5010,
 				controls:		5011,
 				tvguide:		5012,
-				popupHider:		5015,
+				settings:	{
+						xbmc:			5013,		// D(subpage)
+						mysql:			5014,		// D(subpage)
+				},
+				popup_hider:		5015,	// D(subpage)
+				loading_slider:		5016,	// D(subpage) + S(image)
 				np_thumbnail:	{
 							join:		5030,
 							url:		null,
@@ -103,35 +110,41 @@ var XBMC_GUI = function() {
 				},
 				np_info_two:		5032,
 				np_info_three:		5033,
-				playerTime:		5034,
+				player_time:		5034,
 				fanart:		{
 							join:		5035,
 							url:		null,
 						},
-				mediaList:		5041,
-				transport_playpause:	5042,
-				settings:	{
-						xbmc:			5013,		// D(subpage)
-						mysql:			5014,		// D(subpage)
-				},
+				mediaList:		5041,	// L + S(text)
+				transport_playpause:	5042,	//
+				loading_slider_base:	5043,	// S(image)
+				loading_text:		5044,	// S(image)
+				loading_text_dot1:	5045,	// D(image)
+				loading_text_dot2:	5046,	// D(image)
+				loading_text_dot3:	5047,	// D(image)
+				no_media_found:		5048,	// S(image)
+
 
 			},
 
 
 		},
-		XBMC:	null,
-		//jsonBuffer:				"",
-		//jsonBraceCount:				0,
-		currentList:				"movies", // sets default list page
+		XBMC:			null,
+		//jsonBuffer:		"",
+		//jsonBraceCount:	0,
+		currentList:		"movies", // sets default list page
+		volumeDevice:		null,
 	};
 
 
 	// --- Public Functions --- //
 	self.setup = function(params) {
 
+		try {
 		self.XBMC = new XBMC_Controller();
-		if ( (r = self.XBMC.setup()) === false ) consolelog("Failed to create the XBMC_Controller object");
+		if ( (r = self.XBMC.Setup()) === false ) consolelog("Failed to create the XBMC_Controller object");
 		else self.XBMC.QueueInitMsg("setting up xbmc communications...");
+		} catch (e) { consolelog("Error running XBMC_Controller.Setup() - " + e) }
 
 		// Clear lists from previous data for new XBMC instance to load new data
 		CF.setJoins([
@@ -140,21 +153,38 @@ var XBMC_GUI = function() {
 			{join: "d"+self.joins.yatse.controls, value: 1},		// show the controls page
 			{join: "d"+self.joins.yatse.wall, value: 0},			// hide the media wall page
 			{join: "d"+(self.joins.yatse.topbar.subpage-1), value: 1},	// show the standard topbar
-			{join: "s"+self.joins.yatse.np_info_one.join,	value: ""},
-			{join: "s"+self.joins.yatse.np_info_two,	value: ""},
-			{join: "s"+self.joins.yatse.np_info_three,	value: ""},
-			{join: "s"+self.joins.yatse.sidemenu.np_primary_info, value: ""},
-			{join: "s"+self.joins.yatse.sidemenu.np_secondary_info, value: ""},
+			//{join: "s"+self.joins.yatse.np_info_one.join,	value: ""},
+			//{join: "s"+self.joins.yatse.np_info_two,	value: ""},
+			//{join: "s"+self.joins.yatse.np_info_three,	value: ""},
+			//{join: "s"+self.joins.yatse.sidemenu.np_primary_info, value: ""},
+			//{join: "s"+self.joins.yatse.sidemenu.np_secondary_info, value: ""},
 		]);
 
-		if ( self.joins.yatse.np_thumbnail.x == null) {
-			// setup default main thumbnail size
-			CF.getProperties("s"+self.joins.yatse.np_thumbnail.join, function(j) {
-				self.joins.yatse.np_thumbnail.x = j.x;
-				self.joins.yatse.np_thumbnail.y = j.y;
-				self.joins.yatse.np_thumbnail.w = j.w;
-				self.joins.yatse.np_thumbnail.h = j.h;
-				consolelog("np_thumbnail: w = " + j.w + ", h = " + j.h + ", x = " + j.x);
+		resetGUI(); // why not here?? and scrap joins from above?
+
+		if ( self.joins.yatse.np_thumbnail.y === null) {
+			// setup default controls screen thumbnail sizes
+			CF.getProperties([
+				"s"+self.joins.yatse.np_thumbnail.join,
+				"s"+self.joins.yatse.sidemenu.np_thumbnail.join,
+			], function(joins) {
+				for ( var i = 0; i < joins.length; i++ ) {
+					switch(joins[i].join) {
+						case "s"+self.joins.yatse.np_thumbnail.join:
+							self.joins.yatse.np_thumbnail.x = joins[i].x;
+							self.joins.yatse.np_thumbnail.y = joins[i].y;
+							self.joins.yatse.np_thumbnail.w = joins[i].w;
+							self.joins.yatse.np_thumbnail.h = joins[i].h;
+							break;
+						case "s"+self.joins.yatse.sidemenu.np_thumbnail.join:
+							self.joins.yatse.sidemenu.np_thumbnail.x = joins[i].x;
+							self.joins.yatse.sidemenu.np_thumbnail.y = joins[i].y;
+							self.joins.yatse.sidemenu.np_thumbnail.w = joins[i].w;
+							self.joins.yatse.sidemenu.np_thumbnail.h = joins[i].h;
+							break;
+					}
+				}
+				//consolelog("np_thumbnail: w = " + j.w + ", h = " + j.h + ", x = " + j.x);
 
 			});
 		}
@@ -165,9 +195,9 @@ var XBMC_GUI = function() {
 		CF.watch(CF.JoinChangeEvent, [
 			"d"+self.joins.subtitles,
 			"d"+self.joins.yatse.wall,
-			"d"+self.joins.connected.join,
-			"d"+self.joins.yatse.specialCommands,
-			"d"+self.joins.yatse.pcCommands,
+			"d"+self.XBMC.joins.connected.join,
+			"d"+self.joins.yatse.special_commands,
+			"d"+self.joins.yatse.pc_commands,
 			"d"+self.joins.yatse.diagnostics.subpage,
 			"d"+self.joins.playing,
 			"d"+self.joins.yatse.topbar.subpage,
@@ -187,7 +217,7 @@ var XBMC_GUI = function() {
 		CF.watch(CF.ObjectDraggedEvent, "a"+self.joins.progress, onSliderDragged);
 		CF.watch(CF.ObjectReleasedEvent, "a"+self.joins.progress, onSliderReleased);
 
-		CF.setProperties({join: "s"+self.joins.yatse.fanart.join, opacity: 0}); // hide the fanart image
+		//CF.setProperties({join: "s"+self.joins.yatse.fanart.join, opacity: 0}); // hide the fanart image - already done in resetGUI()
 
 		//if ( (r = self.XBMC.setup()) === false ) consolelog("Failed to create the XBMC_Controller object");
 
@@ -197,13 +227,38 @@ var XBMC_GUI = function() {
 	self.hidePopups = function() {
 		consolelog("Hiding popup subpages");
 		CF.setJoins([
-			{join: "d"+self.joins.yatse.pcCommands, value: 0},
-			{join: "d"+self.joins.yatse.specialCommands, value: 0},
-			{join: "d"+self.joins.yatse.subCommands, value: 0},
+			{join: "d"+self.joins.yatse.pc_commands, value: 0},
+			{join: "d"+self.joins.yatse.special_commands, value: 0},
+			{join: "d"+self.joins.yatse.sub_commands, value: 0},
 			{join: "d"+self.joins.yatse.diagnostics.subpage, value: 0},
 			{join: "d"+self.joins.yatse.settings.xbmc, value: 0},
 			{join: "d"+self.joins.yatse.settings.mysql, value: 0},
 		]);
+	};
+
+	self.loadMediaList = function(param) {
+		try {
+			var updatingLists = updatingLists || {};
+			// string test
+			updatingLists[XBMC.in_array(param.type.toLowerCase(), XBMC.mediaListTypes, false)] = param.force || false;
+		} catch (e) {
+			try {
+				// array test
+				while(prop = param.type.shift()) updatingLists[XBMC.in_array(prop, XBMC.mediaListTypes, false)] = param.force || false;
+			} catch (e) {
+				try {
+					// object test
+					//for (var prop in param.type) this[XBMC.in_array(prop, XBMC.mediaListTypes, false)] = true;
+					for (var prop in param.type) {
+						if( param.type.hasOwnProperty(prop) && (type = XBMC.in_array(prop, XBMC.mediaListTypes, false)) ) updatingLists[type] = param.force || false;
+					}
+				} catch (e) {
+					console.log("Failed to find valid type in param argument");
+				}
+			}
+		}
+		if (updatingLists[Object.keys(updatingLists)[0]] || !self.XBMC.mediaList[Object.keys(updatingLists)[0]]) self.XBMC.Get[Object.keys(updatingLists)[0]];
+
 	};
 
 	//obj = {type: string, force: boolean, list: array}
@@ -222,7 +277,7 @@ var XBMC_GUI = function() {
 				// tokens passed && valid JSON string
 				// load existing list
 				consolelog("Loading cached " + obj.type + " list...");
-				//CF.setJoin("s"+self.joins.init, ("loading cached list of " + obj.type + "..."));
+
 				self.XBMC.QueueInitMsg("loading cached list of " + obj.type + "...");
 				self.XBMC.SetListArray(obj.type, decoded);
 
@@ -232,14 +287,19 @@ var XBMC_GUI = function() {
 				updateStatus();
 			} catch (e) {
 				// invalid JSON string
-				if ( self.XBMC.in_array(obj.type, self.XBMC.mediaListTypes) ) {
+				var type;
+				if ( (type = self.XBMC.in_array(obj.type, self.XBMC.mediaListTypes)) ) {
 					// check if not first load by checking guiComplete (only want cached version if not connected)
-					if ( !(guiComplete) && self.joins.connected.value == 0 )
+					//if ( !(guiComplete) && self.XBMC.joins.connected.value == 0 )
+					consolelog("XBMC connected.value = " + self.XBMC.joins.connected.value);
+					if ( self.XBMC.joins.connected.value == 0 ) {
+						consolelog("Skipping update of " + obj.type + " list from XBMC...");
+						self.XBMC.SetListArray(type); // mark list as loadeds
 						updatingLists.shift(); // clear item from update list
-					else {
+					} else {
 						// load list from XBMC
 						consolelog("Loading new " + obj.type + " list from XBMC...");
-						self.XBMC.get[obj.type.toLowerCase()]();
+						self.XBMC.Get[obj.type.toLowerCase()]();
 					}
 				}
 				/*
@@ -252,7 +312,7 @@ var XBMC_GUI = function() {
 					case "episodes":
 					case "songs":
 						// check if not first load by checking guiComplete (only want cached version if not connected)
-						if ( !(guiComplete) && self.joins.connected.join == 0 ) {
+						if ( !(guiComplete) && self.XBMC.joins.connected.join == 0 ) {
 							updatingLists.shift(); // clear item from update list
 							break;
 						}
@@ -277,7 +337,16 @@ var XBMC_GUI = function() {
 	};
 
 	self.configureVolume = function(obj) {
-		volumeDevice = (typeof volumeDevice == "object") ? obj : null;
+		// check passed object is valid (as much as possible...)
+		//self.volumeDevice = (typeof self.volumeDevice == "object" && typeof obj.query == "function") ? obj : null;
+
+		try {
+			self.volumeDevice = obj;
+			self.volumeDevice.query("VOLUME");
+		} catch (e) {
+			consolelog("Invalid external volume device set (typeof self.volumeDevice = " + (typeof self.volumeDevice) + ", self.volumeDevice = " + self.volumeDevice + ", (self.volumeDevice === null) = " + (self.volumeDevice === null) + " - " + e);
+			self.volumeDevice = null;
+		}
 	};
 
 	self.toggleMenu = function(force) {
@@ -370,20 +439,44 @@ var XBMC_GUI = function() {
 
 	self.buildWall = function(type) {
 		arr = [];
-		switch(type.toLowerCase()) {
-			case "movies":
-			case "tvshows":
-			case "artists":
-			case "playlists":
-			case self.XBMC.ids.movies:
-			case self.XBMC.ids.tvshows:
-			case self.XBMC.ids.artists:
+		if ( (type = self.XBMC.in_array(type, self.XBMC.mediaListTypes)) ) {
+			try{
 				consolelog("Building the " + type + " wall...");
 				arr = self.XBMC.GetListArray(type);
 				//console.log(arr);
 				consolelog("arr.length = " + arr.length);
+			} catch (e) {
+				consolelog("Exception caught in self.buildWall(" + type + ") - " + e);
+			}
+		}
+		/*
+		switch(type.toLowerCase()) {
+			case "movies":
+			case "tvshows":
+			case "seasons":
+			case "episodes":
+			case "artists":
+			case "albums":
+			case "songs":
+			//case "playlists": // TODO
+			case self.XBMC.ids.movies:
+			case self.XBMC.ids.tvshows:
+			case self.XBMC.ids.seasons:
+			case self.XBMC.ids.episodes:
+			case self.XBMC.ids.artists:
+			case self.XBMC.ids.albums:
+			case self.XBMC.ids.songs:
+				try{
+					consolelog("Building the " + type + " wall...");
+					arr = self.XBMC.GetListArray(type);
+					//console.log(arr);
+					consolelog("arr.length = " + arr.length);
+				} catch (e) {
+					consolelog("Exception caught in self.buildWall(" + type + ") - " + e);
+				}
 				break;
 		}
+		*/
 
 		if ( arr.length > 0 ) {
 			// clear previous wall list
@@ -409,7 +502,7 @@ var XBMC_GUI = function() {
 			// Response for playing media: {"id":"1","jsonrpc":"2.0","result":[{"player.id":0,"type":"audio"}]}
 			// Response for no media playing: {"id":"1","jsonrpc":"2.0","result":[]}
 
-			if (json.result.length == null || json.result.length == 0 ) {
+			if (json.result.length === null || json.result.length == 0 ) {
 				//CF.setJoin("d"+self.joins.mediaList, 1);		// Show Item Wall subpage
 				//CF.setJoin("d"+self.joins.nowPlaying.subpage, 0);	// Hide Now Playing subpage
 				self.XBMC.player.id = null;
@@ -418,7 +511,7 @@ var XBMC_GUI = function() {
 				self.XBMC.player.id = json.result[0].type;
 				//Get the latest details
 				//self.XBMC.getVideoPlayerStatus();		// Set feedback status on Play/Pause button
-				self.XBMC.getNowPlayingItem();			// Set all the latest info and start timer
+				self.XBMC.GetNowPlayingItem();			// Set all the latest info and start timer
 			}
 
 			startNowPlayingLoop();		 // Check player status and report feedback according to specified interval.
@@ -524,9 +617,14 @@ var XBMC_GUI = function() {
 	*/
 
 	self.updateMediaArray = function(json) {
+		var token;
 		consolelog("XBMC_GUI.updateMediaArray() json.id = " + json.id);
 		try {
+			if ( (token = self.XBMC.in_array(json.id, self.XBMC.mediaListTypes)) ) {
+				consolelog("global token for media list = " + token);
+			} else throw "Incorrect id passed...";
 
+			/*
 			switch(json.id) {
 				case self.XBMC.ids.movies:
 					//token = "Movies";
@@ -546,6 +644,7 @@ var XBMC_GUI = function() {
 				default:
 					throw "Incorrect id passed...";
 			}
+			*/
 
 
 			//self.XBMC.resetListArray(json.id); // clear existing media array - no longer needed as building complete list first before pushing to Controller_XBMC array
@@ -556,7 +655,7 @@ var XBMC_GUI = function() {
 			var rowItems = {};
 			var child = null;
 			var parent = null;
-			maxPerRow = 9;
+			var maxPerRow = 9;
 			delete artistid;
 			delete albumid;
 			delete tvshowid;
@@ -587,8 +686,8 @@ var XBMC_GUI = function() {
 					}
 
 					// add last row to arry
-					if (child == null) list.push(rowItems);
-					else if (parent == null) list[child].push(rowItems);
+					if (child === null) list.push(rowItems);
+					else if (parent === null) list[child].push(rowItems);
 					else list[parent][child].push(rowItems);
 
 					//list[albumid/artistd/etc] = rowItems
@@ -600,8 +699,8 @@ var XBMC_GUI = function() {
 					itemCount = 0;
 					rowCount++;
 
-					if (child == null) list.push(rowItems);
-					else if (parent == null) list[child].push(rowItems);
+					if (child === null) list.push(rowItems);
+					else if (parent === null) list[child].push(rowItems);
 					else list[parent][child].push(rowItems);
 
 					rowItems = {}; // reset horizontal row list
@@ -739,21 +838,21 @@ var XBMC_GUI = function() {
 			}
 
 			padRow();
-
+			consolelog("Created list for " + tokens);
 			console.log(list);
 			self.XBMC.SetListArray(json.id, list);
 
 			//consolelog("Attempting to set [XBMC_Movies] to = " + JSON.stringify(self.XBMC.GetListArray("movies")));
 
 			//CF.setToken(CF.GlobalTokensJoin, "[XBMC_" + token + "]", JSON.stringify(self.XBMC.GetListArray(json.id)));
-			CF.setToken(CF.GlobalTokensJoin, "[XBMC_" + token + "]", JSON.stringify(list));
+			CF.setToken(CF.GlobalTokensJoin, "[" + token + "]", JSON.stringify(list));
 
 			CF.getJoin(CF.GlobalTokensJoin, function(j, v, t) {
 				try {
-					consolelog("t[XBMC_" + token + "] = --v");
-					console.log(t["[XBMC_" + token + "]"]);
-					consolelog("JSON.parse(t[XBMC_" + token + "]) = --v");
-					console.log(JSON.parse(t["[XBMC_" + token + "]"]));
+					consolelog("t[" + token + "] = --v");
+					console.log(t["[" + token + "]"]);
+					consolelog("JSON.parse(t[" + token + "]) = --v");
+					console.log(JSON.parse(t["[" + token + "]"]));
 				} catch (e) {
 					consolelog("Exception caught setting token In XBMC_GUI.UpdateMediaArray() - " + e);
 				}
@@ -774,7 +873,7 @@ var XBMC_GUI = function() {
 
 	self.playItem = function(list, listIndex, join, tokens) {
 		// Play the selected item. Clear the previous items on playlist and add current item to playlist.
-		self.XBMC.clearPlaylists();	// Clear the playlist of previous items
+		self.XBMC.ClearPlaylists();	// Clear the playlist of previous items
 
 		if (list != "") {
 			// select item (from button press/click)
@@ -785,12 +884,12 @@ var XBMC_GUI = function() {
 		self.XBMC.selectedItem.resume = false;
 
 		playSelectedItem = true;
-		self.XBMC.getSelectedMediaDetails();
+		self.XBMC.GetSelectedMediaDetails();
 	};
 
 	self.resumeItem = function(list, listIndex, join, tokens) {
 		// Play the selected item. Clear the previous items on playlist and add current item to playlist.
-		self.XBMC.clearPlaylists();	// Clear the playlist of previous items
+		self.XBMC.ClearPlaylists();	// Clear the playlist of previous items
 
 		if (list != "") {
 			// select item (from button press/click)
@@ -801,7 +900,7 @@ var XBMC_GUI = function() {
 		self.XBMC.selectedItem.resume = true;
 
 		playSelectedItem = true;
-		self.XBMC.getSelectedMediaDetails();
+		self.XBMC.GetSelectedMediaDetails();
 	};
 
 	self.selectItem = function(list, listIndex, join, tokens) {
@@ -817,32 +916,25 @@ var XBMC_GUI = function() {
 	};
 
 	self.getVolume = function() {
-		if (typeof volumeDevice != "object") self.XBMC.getVolume(self.joins.volume.level);
-		/*
-		switch(typeof volumeDevice) {
-			case "object":
-				// use external device for volume control (ie: AV Receiver)
-				if ( volumeDevice != null && typeof volumeDevice.query != "function" ) volumeDevice.query("VOLUME");
-				break;
-			default:
-				// use XBMC for volume control
-				self.XBMC.getVolume(self.volume.level);
-				break;
+		console.log(self.volumeDevice);
+		try {
+			// use external device for volume control (ie: AV Receiver)
+			self.volumeDevice.query("VOLUME");
+		} catch (e) {
+			// use XBMC for volume control
+			consolelog("XBMC_GUI.getVolume(): External volume device not setup - using XBMC for volume control. - " + e);
+			self.XBMC.GetVolume(self.joins.volume.level);
 		}
-		*/
 	}
 
 	// vol = [ 0 <= 100 ]
 	self.setVolume = function(vol) {
-		switch(typeof volumeDevice) {
-			case "object":
-				// use external device for volume control (ie: AV Receiver)
-				if ( typeof volumeDevice.action == "function" ) volumeDevice.action("VOLUME", vol);
-				break;
-			default:
-				// use XBMC for volume control
-				self.XBMC.setVolume(vol);
-				break;
+		try {
+			// use external device for volume control (ie: AV Receiver)
+			self.volumeDevice.action("VOLUME", vol);
+		} catch (e) {
+			// use XBMC for volume control
+			self.XBMC.SetVolume(vol);
 		}
 	}
 
@@ -865,74 +957,59 @@ var XBMC_GUI = function() {
 		});
 	};
 
-	// --- Private Functions --- //
-	function onJSONResponse(feedbackItem, matchedString) {
-		//consolelog("json feeback received...\n " + matchedString);
+	/*
+	function parseJSONBuffer() {
+		if (self.XBMC.jsonBuffer.length > 0 ) {
+			consolelog("Processing JSON buffer...");
+			switch (self.XBMC.jsonBuffer[0]){
+				case "{":
+					self.XBMC.jsonBraceCount++;
+					self.XBMC.jsonValid = true;
+					break;
+				case "}":
+					self.XBMC.jsonBraceCount--;
+					break;
+			}
+			if (self.XBMC.jsonValid === true) self.XBMC.jsonString += self.XBMC.jsonBuffer[0]; // add character to buffer, skips any garbage at beginning of response
 
-		// need to catch new responses and queue them....somehow --> queue sending msgs while buffer isnt empty?? doesnt protect against xbmc notifications ie: OnPlay
-		try {
-			for (i = 0; i < matchedString.length; i++) {
-				Switch1:
-				switch (matchedString[i]){
-					case "{":
-						self.XBMC.jsonBraceCount++;
-						valid = true;
-						break Switch1;
-					case "}":
-						self.XBMC.jsonBraceCount--;
-						break Switch1;
-				}
-
-				if (valid == true) self.XBMC.jsonBuffer += matchedString[i]; // add character to buffer
-
-				if (valid != undefined && self.XBMC.jsonBraceCount == 0) {
-					// complete JSON response - should parse correctly
-					consolelog("Found complete JSON response...");
-					//consolelog("Found completed JSON response -> " + self.XBMC.jsonBuffer + "");
+			if (self.XBMC.jsonValid === true && self.XBMC.jsonBraceCount == 0) {
+				consolelog("FOUND VALID JSON STRING!!");
+				try {
 					var decoded = JSON.parse(self.XBMC.jsonBuffer);
-					if (decoded != null) {
+					consolelog("JSON string parsed successfully!");
+					if (decoded !== null) {
+						consolelog("Send JSON object too jsonCallback()");
 						jsonCallback(decoded); // send to json callback function
 					} else {
-						consolelog("Failed to parse JSON string :(");
+						consolelog("Failed to parse JSON string :(\ndecoded = " + decoded);
 					}
+				} catch(e) {
+					consolelog("JSON.parse() failed - " + e);
+				} finally {
+					// now reset buffer and and start again...
 
-					valid = undefined;
-					delete valid;
-					self.XBMC.jsonBuffer = "";
+					self.XBMC.jsonValid = false;
+					self.XBMC.jsonString = "";
 					self.XBMC.jsonBraceCount = 0;
 					self.XBMC.jsonWaitResponse = false;
-
-					// now reset buffer and and start again...
-
+					self.XBMC.runJSON();
 				}
+
+
 			}
-		} catch(e) {
-			consolelog("Exception caught while processing onJSONResponse():\n" + e + "\nJSON string => \n" + matchedString);
+
+			self.XBMC.jsonBuffer = self.XBMC.jsonBuffer.substr(1);
+			self.parseJSONBuffer();
 		}
+	}
+	*/
 
-		/* grrrr this one (newest) is broken
+	// --- Private Functions --- //
+
+	function onJSONResponse(feedbackItem, matchedString) {
+		//consolelog("json feeback received...\n " + matchedString);
 		try {
-			var decoded = JSON.parse(matchedString);
-			// full JSON string found
-			//valid = true;
-
-			if (decoded != null) {
-				jsonCallback(decoded); // send to json callback function
-			} else consolelog("Failed to parse JSON string :(");
-
-			// now reset buffer and and start again...
-			decoded = null;
-			valid = undefined;
-			delete valid;
-			self.XBMC.jsonBuffer = "";
-			self.XBMC.jsonBraceCount = 0;
-
-
-		} catch (e) {
-			consolelog("Adding JSON response to buffer... decoded = " + decoded);
-			decoded = null; // reset
 			for (i = 0; i < matchedString.length; i++) {
-
 				Switch1:
 				switch (matchedString[i]){
 					case "{":
@@ -945,94 +1022,46 @@ var XBMC_GUI = function() {
 				}
 
 				if (valid == true) self.XBMC.jsonBuffer += matchedString[i]; // add character to buffer
-				// complete JSON string ready to be parsed
+
 				if (valid != undefined && self.XBMC.jsonBraceCount == 0) {
 					// complete JSON response - should parse correctly
-					consolelog("Found completed JSON response -> " + self.XBMC.jsonBuffer + "");
-					try {
-						JSON.parse(self.XBMC.jsonBuffer);
-						onJSONResponse("", self.XBMC.jsonBuffer);
-					} catch (e) {
-						consolelog("Test parse of 'apparently' complete JSON buffer failed :')");
-					}
-
-				}
-			}
-
-			// complete JSON string ready to be parsed
-			//if (valid != undefined && self.XBMC.jsonBraceCount == 0) {
-			//	// complete JSON response - should parse correctly
-			//	consolelog("Found completed JSON response -> " + self.XBMC.jsonBuffer + "");
-			//	//var decoded = JSON.parse(self.XBMC.jsonBuffer);
-			//	onJSONResponse("", self.XBMC.jsonBuffer);
-			//}
-		} finally {
-
-		}
-		*/
-
-
-		/* Older version - still needed testing with try-catch-finally block....
-		try {
-			try {
-				var decoded = JSON.parse(matchedString);
-				// full JSON string found in one response
-				valid = true;
-			} catch (e) {
-				consolelog("Adding JSON response to buffer... decoded = " + decoded);
-				decoded = null; // reset
-				for (i = 0; i < matchedString.length; i++) {
-
-					Switch1:
-					switch (matchedString[i]){
-						case "{":
-							self.XBMC.jsonBraceCount++;
-							valid = true;
-							break Switch1;
-						case "}":
-							self.XBMC.jsonBraceCount--;
-							break Switch1;
-					}
-
-					if (valid == true) self.XBMC.jsonBuffer += matchedString[i]; // add character to buffer
-				}
-			} finally {
-				// complete JSON string ready to be parsed
-				if (valid != undefined && self.XBMC.jsonBraceCount == 0) {
-					// complete JSON response - should parse correctly
-					consolelog("Found completed JSON response -> " + self.XBMC.jsonBuffer + "");
+					//consolelog("Found completed JSON response -> " + self.XBMC.jsonBuffer + "");
 					var decoded = JSON.parse(self.XBMC.jsonBuffer);
-
-					if (decoded != null) {
+					valid = undefined;
+					delete valid;
+					self.XBMC.jsonBuffer = "";
+					self.XBMC.jsonBraceCount = 0;
+					consolelog(decoded)
+					if (decoded !== null) {
+						consolelog("sending decoded js jsonCallback");
 						jsonCallback(decoded); // send to json callback function
 					} else {
 						consolelog("Failed to parse JSON string :(");
 					}
 
 					// now reset buffer and and start again...
-					decoded = null; // reset
-					valid = undefined;
-					delete valid;
-					self.XBMC.jsonBuffer = "";
-					self.XBMC.jsonBraceCount = 0;
+
 				}
 			}
-
 		} catch(e) {
 			consolelog("Exception caught while processing onJSONResponse():\n" + e + "\nJSON string => \n" + matchedString);
 		}
-		*/
-
 	}
+
 
 	function jsonCallback(json) {
 		// use the decoded data here
-		//CFlogObject(decoded);
+		//CFlogObject(json);
+		console.log(json);
 
 		//consolelog("JSON Response from id = '" + json.id + "', method = '" + json.method + "' ->\n" + JSON.stringify(json));
 
 		// Perform REGEX to find response type (movies, video, audio, etc) - TODO!!
-		//CFlog("XBMC Feedback JSON id = " + decoded.id);
+		try {
+			consolelog("XBMC Feedback JSON id = " + (json.id || null));
+		} catch (e) {
+			consolelog("|| operator didnt work detector json.id :(");
+		}
 		//if ( !json.hasOwnProperty("id") ) json.id = null;
 		switch ( json.id || null ) {
 			case self.XBMC.ids.movies:
@@ -1060,7 +1089,7 @@ var XBMC_GUI = function() {
 				// Update the wall list
 				break;
 			case self.joins.volume.level:
-				if ( typeof volumeDevice != "object") { // if XBMC is used to control the volume, guards against XBMC sending volume updates to external device
+				if ( (typeof self.volumeDevice) === null ) { // if XBMC is used to control the volume, guards against XBMC sending volume updates to external device
 					// Update the volume level
 					vol = ( typeof json.result == "object" ) ? json.result.volume : json.result; // object returned from Application.GetProperties, integer returned from Application.setVolume
 					CF.setJoin("a"+self.joins.volume.level, vol);
@@ -1072,7 +1101,7 @@ var XBMC_GUI = function() {
 
 				if (playSelectedItem === true) {
 					// setup GUI with media info
-					self.XBMC.playItem();
+					self.XBMC.PlayItem();
 					playSelectedItem = false;
 				}
 				break;
@@ -1130,7 +1159,7 @@ var XBMC_GUI = function() {
 
 
 				// now update the details of the item
-				self.XBMC.getNowPlayingItem();
+				self.XBMC.GetNowPlayingItem();
 
 				// no break here
 			case "Player.Seek":
@@ -1150,7 +1179,7 @@ var XBMC_GUI = function() {
 					("0"+json.result.totaltime.minutes).slice(-2) +
 					":" +
 					("0"+json.result.totaltime.seconds).slice(-2);
-				CF.setJoin("s"+self.joins.yatse.playerTime, time);
+				CF.setJoin("s"+self.joins.yatse.player_time, time);
 
 				break;
 			case "Player.GetItem":
@@ -1300,7 +1329,7 @@ var XBMC_GUI = function() {
 												consolelog("Updating thumbnail -> this.src = " + this.src + ", this.join = " + j);
 												CF.setJoins([
 													{join: j, value: src},
-													{join: "s"+self.joins.yatse.sidemenu.np_thumbnail, value: src}
+													{join: "s"+self.joins.yatse.sidemenu.np_thumbnail.join, value: src}
 												]);
 												CF.setProperties({join: j, opacity: 1}, 0, 2, CF.AnimationCurveLinear, function(){
 													if (!(guiComplete)) {
@@ -1356,7 +1385,7 @@ var XBMC_GUI = function() {
 						//nowPlayingLoop.enabled = true;
 						startNowPlayingLoop({enabled: true});
 						//updateStatus();
-						//CF.setJoin("s"+self.joins.connected.join, "http://www.southernelectriq.com.au/commandfusion/raglan/images/yatse_status_green.png"); // connected, playing
+						//CF.setJoin("s"+self.XBMC.joins.connected.join, "http://www.southernelectriq.com.au/commandfusion/raglan/images/yatse_status_green.png"); // connected, playing
 						break;
 					case "Player.OnPause":
 						consolelog("Player.OnPause response received...[player.id = " + json.params.data.player.playerid + ", speed = " + json.params.data.player.speed +"]");
@@ -1408,7 +1437,7 @@ var XBMC_GUI = function() {
 						case "pong":
 							// not needed if using connected join?
 							CFlog("Ping response received");
-							CF.setJoin("d"+self.joins.connected.join, 1); // force connected join update
+							CF.setJoin("d"+self.XBMC.joins.connected.join, 1); // force connected join update
 							break;
 						default:
 							//console.log(json);
@@ -1417,7 +1446,7 @@ var XBMC_GUI = function() {
 								// update player speed and status indicator
 								self.XBMC.player.speed = json.result.speed;
 								updateStatus();
-								//CF.setJoin("s"+self.joins.connected.join, "http://www.southernelectriq.com.au/commandfusion/raglan/images/yatse_status_" + ((self.XBMC.player.speed == 0) ? "white" : "green") + ".png"); // connected, idle
+								//CF.setJoin("s"+self.XBMC.joins.connected.join, "http://www.southernelectriq.com.au/commandfusion/raglan/images/yatse_status_" + ((self.XBMC.player.speed == 0) ? "white" : "green") + ".png"); // connected, idle
 								consolelog("Current player speed updated to = " + self.XBMC.player.speed);
 							} else {
 								CFlog("Nothing required from JSON response in jsonCallback()");
@@ -1434,16 +1463,19 @@ var XBMC_GUI = function() {
 			self.XBMC.QueueInitMsg("syncing xbmc volume...");
 			self.getVolume();
 
+			consolelog("All gui data requests. Prematurely starting now playing loop...");
 			startNowPlayingLoop({enabled: true});
 		}
 
 		function loadMediaLists() {
 			//types = ["movies", "tvshows", "artists"];
-			QueueInitMsg("refreshing media lists from xbmc...");
-			for ( var i = 0; i < self.XBMC.mediaListTypes.length; i++ )
-				self.loadXBMCList( { type: self.XBMC.mediaListTypes[i], force: true } ); // force refresh of lists from XBMC
-
-			consolelog("THIS SHOULDNT BE SEEN BEFORE THE MEDIA LISTS HAVE BEEN LOADED!!"); // remove once tested
+			self.XBMC.QueueInitMsg("refreshing media lists from xbmc...");
+			try {
+				for ( var i = 0; i < self.XBMC.mediaListTypes.length; i++ )
+					self.loadXBMCList( { type: self.XBMC.mediaListTypes[i] } ); // maybe force refresh of lists from XBMC??
+			 } catch (e) {
+				 consolelog("Caught exception in loadMediaLists() - " + e);
+			 }
 
 			var id = setInterval(function() {
 				if (self.XBMC.listsComplete) {
@@ -1490,16 +1522,21 @@ var XBMC_GUI = function() {
 
 		// queue dummy command to test XBMC connection - first queued command may get lost if disconnected at startup
 		self.XBMC.QueueInitMsg("testing xbmc connectivity...");
-		self.XBMC.ping();
+		self.XBMC.Ping();
 
 		// Load persistent data from CF.GlobalTokensJoin
-		self.XBMC.QueueInitMsg("loading saved data...");
+		self.XBMC.QueueInitMsg("loading saved information for xbmc...");
 
 		CF.getJoin(CF.GlobalTokensJoin, function(j, v, tokens) {
 			// token to load
+			var keys = [];
 			keys = ["currentList"];
 			keys = keys.concat(self.XBMC.mediaListTypes);
-			for ( i = 0; i < keys.length; i++) {
+			console.log(keys);
+			try {
+				//consolelog("keys.length = " + keys.length);
+			for ( var i = 0; i < keys.length; i++) {
+				consolelog("keys.length = " + keys.length);
 				if (self.XBMC.in_array(keys[i], self.XBMC.mediaListTypes)) {
 					// load media list
 					if (tokens["[" + keys[i] + "]"] != "") {
@@ -1508,7 +1545,10 @@ var XBMC_GUI = function() {
 						self.loadXBMCList( { type: keys[i], list: tokens["[" + keys[i] + "]"] } );
 					}
 				// load saved variable as string
-				} else self[keys[i]] = tokens["[" + keys[i] + "]"]; // save as self.key = token value
+				} else if ( typeof tokens["[" + keys[i] + "]"] != "undefined" ) {
+					consolelog("Loading saved variabled self." + keys[i] + " = " + tokens["[" + keys[i] + "]"]);
+					self[keys[i]] = tokens["[" + keys[i] + "]"]; // save as self.key = token value
+				}
 
 				/*
 				switch(keys[i]) {
@@ -1531,7 +1571,8 @@ var XBMC_GUI = function() {
 
 
 				if (i == (keys.length - 1)){
-					CF.getJoin("d"+self.joins.connected.join, function(j, v, t) {
+					CF.getJoin("d"+self.XBMC.joins.connected.join, function(j, v, t) {
+
 						if ( v == 1 ) loadMediaLists(); // will be force loaded once connected
 						else {
 							self.XBMC.QueueInitMsg("failed to connect to xbmc client..");
@@ -1542,6 +1583,7 @@ var XBMC_GUI = function() {
 					});
 				}
 			}
+			} catch (e) { consolelog("error in for loop - " + e) }
 		});
 
 		// start 30sec timeout before loading gui without connection
@@ -1556,16 +1598,26 @@ var XBMC_GUI = function() {
 		// start interval to check for preloading complete
 		var preloadIntervalID = setInterval(function() {
 			// check to see if artist list has been loaded or preload timeout expired before presenting interface
-			if ( (preloadTimeoutID == null || guiComplete == true) && self.XBMC.joins.init.queue.length == 0 ) {
-				if (preloadTimeoutID == null) {
+			//if ( (preloadTimeoutID === null || guiComplete == true) && self.XBMC.joins.init.queue.length == 0 ) {
 
-					// TODO: kill the json loop if running?
+			try {
+				if (guiComplete === true && self.XBMC.joins.init.queue.length == 0) {
+					// nowPlayingLoop complete at least one loop and completed the gui
+					// no init msgs left in queue
 
-				} else {
-					self.XBMC.QueueInitMsg("xbmc initialisation complete...");
-					clearTimeout(preloadTimeoutID);
-					preloadTimeoutID = null;
-				}
+					// clear the preload timeout
+					if (preloadTimeoutID !== null) {
+						clearTimeout(preloadTimeoutID);
+						preloadTimeoutID = null;
+					}
+
+					// ok to run the callback function
+				} else throw ""; //?
+			} catch (e) {
+
+			}
+			if ( preloadTimeoutID === null) {
+
 				//CF.setJoin("s"+self.joins.init, ("xbmc initialiasation complete..."));
 				clearInterval(preloadIntervalID);
 				preloadIntervalID = null;
@@ -1578,32 +1630,31 @@ var XBMC_GUI = function() {
 	function onPreloadingComplete() {
 		//CF.unwatch(CF.PreloadingCompleteEvent);
 		self.XBMC.QueueInitMsg("initialising xbmc...");
-		consolelog("PRELOADING COMPLETE - run init()");
+		consolelog("onPreloadingComplete() fired");
+		/*
+		moved to onConnectionStatusChange??
 		init(function() {
 			setTimeout(function() {
 				console.log("Preloading complete! Present the interface...");
 				CF.setJoin("d"+self.joins.yatse.page, 1); // present the GUI after preloading of assets has completed
 
-				//startNowPlayingLoop({enabled: true});	// restart now playing loop
+				startNowPlayingLoop({enabled: true});	// restart now playing loop
 			}, 500);
 		});
+		*/
 	}
 
 	function onJoinChange(join, value, tokens) {
 		consolelog("onJoinChange(" + join + ", " + value + ", " + tokens + ")");
 		switch (join) {
-			case "d"+self.joins.connected.join:
-				//nowPlayingLoop.enabled = true; // reset the loop
+			case "d"+self.XBMC.joins.connected.join:
+				self.XBMC.joins.connected.value = value;
 				if (value == 1) {
-					if (!(guiComplete)) init(); // start init again
-					else startNowPlayingLoop({enabled: true});
-				} else {
-					stopNowPlayingLoop({disconnected: true}); // force reset of GUI
-					// show disconnected popup
-					// include button to trigger WOL
-					//setTimeout(function() {
-					//}, disconnectTimeout);
-				}
+					if ( self.XBMC.jsonQueue.length > 0 ) must = "restart the json loop";
+
+					//if (!(guiComplete)) init(); // start init again
+					//else startNowPlayingLoop({enabled: true});
+				} else stopNowPlayingLoop({disconnected: true}); // force reset of GUI
 				break;
 			case "d"+self.joins.subtitles:
 				if (value == 1) {
@@ -1630,6 +1681,7 @@ var XBMC_GUI = function() {
 					    // ... use the returned items here ...
 					    consolelog("Requesting to build the " + self.currentList + " media wall...");
 					    console.log(items);
+					    consolelog("items.length = " + items.length);
 					    if (self.XBMC.GetListArray(self.currentList).length == 0 || items.length == 0) self.buildWall(self.currentList); // refresh the media list with movies
 					});
 				}
@@ -1639,11 +1691,11 @@ var XBMC_GUI = function() {
 					onJoinChange(j, v, t); // move subpages to correct positions
 					CF.setJoin("d"+self.joins.yatse.settings.mysql, value);  // keep both pages in sync
 				});
-			case "d"+self.joins.yatse.specialCommands:
-			case "d"+self.joins.yatse.pcCommands:
+			case "d"+self.joins.yatse.special_commands:
+			case "d"+self.joins.yatse.pc_commands:
 			case "d"+self.joins.yatse.diagnostics.subpage:
 				// show/hide the popup hider page
-				CF.setJoin("d"+self.joins.yatse.popupHider, value);
+				CF.setJoin("d"+self.joins.yatse.popup_hider, value);
 				break;
 			case "d"+self.joins.playing:
 				CF.setJoin("s"+self.joins.yatse.transport_playpause, "images\\yatse_transport_" + ((value == 1) ? "pause" : "play") + ".png");
@@ -1706,8 +1758,16 @@ var XBMC_GUI = function() {
 		// When getting initial status, if the system is not connected, remote is null.
 		if (connected) {
 			consolelog("System " + system + " connected with " + remote);
+			init(function() {
+				setTimeout(function() {
+					console.log("Preloading complete! Present the interface...");
+					CF.setJoin("d"+self.joins.yatse.page, 1); // present the GUI after preloading of assets has completed
+
+					startNowPlayingLoop({enabled: true});	// restart now playing loop -> may look at moving to onPreloadComplete with a connection ok status check before running...
+				}, 500);
+			});
 		} else {
-			if (remote == null) consolelog("Initial status: system " + system + " is not connected.");
+			if (remote === null) consolelog("Initial status: system " + system + " is not connected.");
 			else consolelog("System " + system + " disconnected from " + remote);
 		}
 	}
@@ -1750,12 +1810,25 @@ var XBMC_GUI = function() {
 				{join: "s"+self.joins.yatse.fanart.join, value: ""},
 				{join: "s"+self.joins.yatse.np_thumbnail.join, value: ""},
 				{join: "a"+self.joins.progress, value: 0},
+				{join: "s"+self.joins.yatse.sidemenu.np_thumbnail.join, value: ""},
+				{join: "s"+self.joins.yatse.sidemenu.np_primary_info, value: ""},
+				{join: "s"+self.joins.yatse.sidemenu.np_secondary_info, value: ""},
 			]);
 		}
 
+		faders = [
+			{join: "s"+self.joins.yatse.fanart.join, opacity: 0},
+			{join: "s"+self.joins.yatse.np_thumbnail.join, opacity: 0},
+			{join: "s"+self.joins.yatse.sidemenu.np_thumbnail.join, opacity: 0},
+			{join: "s"+self.joins.yatse.sidemenu.np_primary_info, opacity: 0},
+			{join: "s"+self.joins.yatse.sidemenu.np_secondary_info, opacity: 0},
+		];
+
 		CF.getProperties("s"+self.joins.yatse.fanart.join, function(j) {
 			if (j.opacity > 0) {
-				CF.setProperties({join: j.join, opacity: 0}, 0, 3, CF.AnimationCurveLinear, function() {
+				// fade out the fanart and thumbnails
+				//CF.setProperties({join: "s"+self.joins.yatse.fanart.join, opacity: 0}, 0, 3, CF.AnimationCurveLinear, function() {
+				CF.setProperties(faders, 0, 3, CF.AnimationCurveLinear, function() {
 					clearJoins();
 				});
 			} else clearJoins();
@@ -1765,47 +1838,41 @@ var XBMC_GUI = function() {
 	// This is the function that creates the loop, runs every 3 seconds. Alternatively can use setInterval.
 	function startNowPlayingLoop(update) {
 		consolelog("Request made to start the Now Playing Loop...\n");
-		if ( typeof update == "object" ){
+		if ( typeof update == "object" ) {
 			console.log(update);
-			if ( update.hasOwnProperty("enabled") && typeof update.enabled == "boolean" ) nowPlayingLoop.enabled = update.enabled;
-			if ( update.hasOwnProperty("complete") && update.complete == true && self.XBMC.player.speed != 0 ) nowPlayingLoop.complete = true;
+			consolelog("self.XBMC.player.speed = " + self.XBMC.player.speed);
+			//									 disable loop if nothing is playing
+			if ( update.hasOwnProperty("enabled") && typeof update.enabled == "boolean" && self.XBMC.player.speed !== 0) nowPlayingLoop.enabled = update.enabled;
+			if ( update.hasOwnProperty("complete") && update.complete == true ) nowPlayingLoop.complete = true;
 		}
+
 		consolelog("startNowPlayingLoop(update): enabled = " + nowPlayingLoop.enabled + ", complete = " + nowPlayingLoop.complete);
-		/*
-		if (nowPlayingLoopID == null) {
-			nowPlayingLoopID = setInterval(function() {
-				consolelog("Next pass of now playing loop running...");
-				self.XBMC.getNowPlaying();
-			}, 5000); // loops to Player.GetActivePlayers -> UpdatePlayer() -> GetProperties -> GetItem
-		}
-		*/
-		// nowPlayingLoop.complete only required when using interval to loop now playing
-		//if (nowPlayingLoop.complete && nowPlayingLoop.enabled) {
 
+
+		consolelog("JSON command queue length = " + self.XBMC.jsonQueue.length);
 		// wait for json queue to clear before running again...
-		if (self.XBMC.jsonQueue.length > 0)  {
-			if (nowPlayingLoopID == null) {
+		if (self.XBMC.jsonQueue.length > 0) {
+			// make sure no timer is already running
+			consolelog("nowPlayingLoopID = " + nowPlayingLoopID + ", (nowPlayingLoopID === null) = " + (nowPlayingLoopID === null));
+			if (nowPlayingLoopID === null) {
 				nowPlayingLoopID = setTimeout(function() {
+					//console.log(CF.systems);
+					consolelog("now playing loop timer expired - calling startNowPlayingLoop() again...");
+					nowPlayingLoopID = null;
 					startNowPlayingLoop();
-				}, 300);
+				}, 5000);  // <-- adjust back to 300 once json query working
 			}
-		//} else if (guiComplete && !self.XBMC.listsComplete) {
-			// pause now playing loop while preloading remaining data
-
-			// TODO: run now playing loop LAST... AFTER all othe xbmc data is loaded - then display the GUI
-
-		//	stopNowPlayingLoop();
 		} else if (nowPlayingLoop.enabled == true && nowPlayingLoop.complete == true) {
 			clearTimeout(nowPlayingLoopID);
 			nowPlayingLoopID = null;
-			//consolelog("Next pass of now playing loop running..."); // working
-			//if (!(guiComplete)) CF.setJoin("s"+self.joins.init, "getting player status from xbmc...");
+
+			consolelog("Next pass of now playing loop running..."); // working
+
 			if (!(guiComplete)) self.XBMC.QueueInitMsg("getting player status from xbmc...");
 			nowPlayingLoop.complete = false; // prevent multiple loops running
-			consolelog("restart of now playing loop accepted...");
-			self.XBMC.getNowPlaying();
-			//nowPlayingLoop.complete = false;
-		} else if (nowPlayingLoopID != null) {
+			self.XBMC.GetNowPlaying();
+		} else if (nowPlayingLoopID !== null) {
+			// now playing loop has been disabled so clear the timer
 			clearInterval(nowPlayingLoopID);
 			nowPlayingLoopID = null;
 		}
@@ -1824,10 +1891,10 @@ var XBMC_GUI = function() {
 		nowPlayingLoopID = null;
 		*/
 
-		if (self.XBMC.player.id == null || data.hasOwnProperty("disconnected")) {
+		if (self.XBMC.player.id === null || data.hasOwnProperty("disconnected")) {
 			// no active players or XBMC has been disconnected to reset the GUI
 			// XBMC may have been disconnected for this to be called so don't relay on XBMC responses to update GUI
-			CF.setProperties({join: "s"+self.joins.yatse.fanart.join, opacity: 0}, 0, 5, CF.AnimationCurveLinear);
+			//CF.setProperties({join: "s"+self.joins.yatse.fanart.join, opacity: 0}, 0, 5, CF.AnimationCurveLinear);
 			resetGUI();
 			self.XBMC.player.speed = 0;
 			if (!(guiComplete)) guiComplete = true; // loop breakout if no active player when gui loads
@@ -1836,14 +1903,14 @@ var XBMC_GUI = function() {
 	}
 
 	function updateStatus() {
-		CF.getJoins(["d"+self.joins.connected.join, CF.GlobalTokensJoin], function(joins) {
+		CF.getJoins(["d"+self.XBMC.joins.connected.join, CF.GlobalTokensJoin], function(joins) {
 			consolelog("updatingLists.length = " + updatingLists.length);
-			if ( parseInt(joins["d"+self.joins.connected.join].value) === 0 ) status = "red";			// disconnected
-			else if (updatingLists.length > 0) status = "blue";						// connected, updating
-			else if (self.XBMC.player.speed == 0 || self.XBMC.player.speed == null) status = "white";	// connected, idle
+			if ( parseInt(joins["d"+self.XBMC.joins.connected.join].value) === 0 ) status = "red";			// disconnected
+			else if (updatingLists) status = "blue";							// connected, updating (updatingLists == undefined when finished)
+			else if (self.XBMC.player.speed == 0 || self.XBMC.player.speed === null) status = "white";	// connected, idle
 			else status = "green";										// connected, active
 
-			CF.setJoin("s"+self.joins.connected.join, "http://www.southernelectriq.com.au/commandfusion/raglan/images/yatse_status_" + status + ".png");
+			CF.setJoin("s"+self.XBMC.joins.connected.join, "http://www.southernelectriq.com.au/commandfusion/raglan/images/yatse_status_" + status + ".png");
 			CF.setJoin("d"+self.joins.playing, (self.XBMC.player.speed == 1) ? 1 : 0); // update play/pause button state
 		});
 
@@ -1873,7 +1940,7 @@ var XBMC_GUI = function() {
 				return img.substring(0, img.length-1); // remove trailing '/' (no idea why XBMC has this...)
 				*/
 				//console.log(self.URL + "image/" + encodeURIComponent(img));
-				return self.XBMC.getURL("HTTP") + "image/" + encodeURIComponent(img);
+				return self.XBMC.GetURL("HTTP") + "image/" + encodeURIComponent(img);
 
 			}
 		} catch (e) {

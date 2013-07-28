@@ -79,7 +79,7 @@
       <cmd name="Yatse Change Host to Openelec" js="CF.getURL(&quot;yatse://select/media_center?ID=5&quot;)" jsSendsCommand="False" />
       <cmd name="myXBMC Seek" js="myXBMC.seek(analog)" jsSendsCommand="False">[sliderval]</cmd>
     </system>
-    <system name="XBMC" ip="" origin="10207" port="9090" protocol="tcp" alwayson="1" offlinequeue="1" accept="0" acceptBroadcasts="0" ssl="0" maxconnections="0" heartbeatRx="{&quot;id&quot;:0,&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;result&quot;:&quot;pong&quot;}" heartbeatTx="{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;method&quot;:&quot;JSONRPC.Ping&quot;,&quot;params&quot;:{},&quot;id&quot;:0}" heartbeatMode="1" eom="" connectionStatus="0" disconnectionStatus="0">
+    <system name="XBMC" ip="192.168.10.103" origin="10207" port="9090" protocol="tcp" alwayson="1" offlinequeue="1" accept="0" acceptBroadcasts="0" ssl="0" maxconnections="0" heartbeatRx="{&quot;id&quot;:0,&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;result&quot;:&quot;pong&quot;}" heartbeatTx="{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;method&quot;:&quot;JSONRPC.Ping&quot;,&quot;params&quot;:{},&quot;id&quot;:0}" heartbeatMode="-1" eom="" connectionStatus="4001" disconnectionStatus="0">
       <cmd name="Left" folder="Input">{"jsonrpc": "2.0", "method": "Input.Left", "params": {  }, "id": 1 }</cmd>
       <cmd name="Right" folder="Input">{"jsonrpc": "2.0", "method": "Input.Right", "params": {  }, "id": 1 }</cmd>
       <cmd name="Up" folder="Input">{"jsonrpc": "2.0", "method": "Input.Up", "params": {  }, "id": 1 }</cmd>
@@ -212,7 +212,7 @@
     <theme type="button" name=".tv_program_dark[state='1']"><![CDATA[padding: 10px 10px 10px 10px;  filter: Alpha(Opacity=50); -moz-opacity:0.5; opacity: 0.5; background-color: #08CEFF; color: White; font-size: 18px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: left; vertical-align: top; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
     <theme type="background" name=".yellow"><![CDATA[background-color: #FFFF00;]]></theme>
     <theme type="button" name=".Status[state='0']"><![CDATA[padding: 0px 0px 0px 0px; color: Red; font-size: 22px; font-name: 'Roboto-Bold'; font-family: 'Roboto'; font-weight: bold; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
-    <theme type="button" name=".Status[state='1']"><![CDATA[padding: 0px 0px 0px 0px; color: Lime; font-size: 18px; font-name: 'Roboto-Bold'; font-family: 'Roboto'; font-weight: bold; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
+    <theme type="button" name=".Status[state='1']"><![CDATA[padding: 0px 0px 0px 0px; color: Lime; font-size: 22px; font-name: 'Roboto-Bold'; font-family: 'Roboto'; font-weight: bold; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
     <theme type="text" name=".TV_episode_title"><![CDATA[ color: #D5D5D5; font-size: 16px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: left; vertical-align: top; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
     <theme type="text" name=".TV_program_title"><![CDATA[ color: #EEEEEE; font-size: 26px; font-name: 'Roboto-Bold'; font-family: 'Roboto'; text-align: left; vertical-align: top; font-weight: bold; font-style: none; text-decoration: none; display: table-cell;]]></theme>
     <theme type="text" name=".TV_episode_time"><![CDATA[ color: #83CCDB; font-size: 16px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: left; vertical-align: bottom; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
@@ -275,7 +275,7 @@
     <theme type="text" name=".Yatse_Main_Title"><![CDATA[ color: White; font-size: 26px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: center; vertical-align: middle; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
     <theme type="text" name=".Yatse_Main_SubTitle"><![CDATA[ color: #AAAAAA; font-size: 20px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: center; vertical-align: middle; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
     <theme type="background" name=".yatse_topbar_bg_selected"><![CDATA[background-color: #002E3C;]]></theme>
-    <theme type="text" name=".Yatse_Wall_Title"><![CDATA[ color: White; font-size: 24px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: center; vertical-align: middle; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
+    <theme type="text" name=".Yatse_Media_List_Title"><![CDATA[ color: White; font-size: 24px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: center; vertical-align: middle; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
     <theme type="background" name=".yatse_topbar_bg"><![CDATA[background-color: #1A1A1A;]]></theme>
     <theme type="button" name=".yatse_topbar_buttons[state='0']"><![CDATA[padding: 0px 0px 0px 0px; color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
     <theme type="button" name=".yatse_topbar_buttons[state='1']"><![CDATA[padding: 0px 0px 0px 0px;  filter: Alpha(Opacity=100); -moz-opacity:1; opacity: 1; background-color: #0791BF; color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
@@ -312,16 +312,18 @@
     <theme type="button" name=".Tickbox[state='0']"><![CDATA[padding: 0px 0px 0px 0px; background-image: url(buttons\50px-tickbox-off.png); color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
     <theme type="button" name=".Tickbox[state='1']"><![CDATA[padding: 0px 0px 0px 0px; background-image: url(buttons\50px-tickbox-on.png); color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
     <theme type="text" name=".yatse_paragraph_middle_center"><![CDATA[ color: White; font-size: 16px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: center; vertical-align: middle; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
+    <theme type="button" name=".loading_dot[state='0']"><![CDATA[padding: 0px 0px 0px 0px; color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
+    <theme type="button" name=".loading_dot[state='1']"><![CDATA[padding: 0px 0px 0px 0px; background-image: url(buttons\loading-text-dot.png); color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
   </themes>
   <tokens>
     <token name="[XBMC_Config]" value="" persist="1" />
-    <token name="[Movies]" value="" persist="1" />
-    <token name="[TVShows]" value="" persist="1" />
-    <token name="[Seasons]" value="" persist="1" />
-    <token name="[Episodes]" value="" persist="1" />
-    <token name="[Artists]" value="" persist="1" />
-    <token name="[Albums]" value="" persist="1" />
-    <token name="[Songs]" value="" persist="1" />
+    <token name="[movies]" value="" persist="1" />
+    <token name="[tvshows]" value="" persist="1" />
+    <token name="[seasons]" value="" persist="1" />
+    <token name="[episodes]" value="" persist="1" />
+    <token name="[artists]" value="" persist="1" />
+    <token name="[albums]" value="" persist="1" />
+    <token name="[songs]" value="" persist="1" />
     <token name="[TVGuide_Channels]" value="" persist="1" />
     <token name="[TVGuide_Data]" value="" persist="1" />
     <token name="[TVGuide_Logos]" value="" persist="1" />
@@ -483,7 +485,7 @@
       <img x="0" y="48" w="1920" h="1080" j="4104" clickthrough="1" refresh="0" l="0" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
       <subpage name="ControlXBMC" x="0" y="528" j="101" transition1="moveIn" subtype1="fromBottom" time1="0.5" ease1="easeOut" transition2="moveIn" subtype2="fromBottom" time2="0.5" ease2="easeIn" clickthrough="0" topmost="1" v="0" l="0" />
       <subpage name="Activities" x="0" y="0" j="102" transition1="moveIn" subtype1="fromTop" time1="0.5" ease1="easeOut" transition2="moveIn" subtype2="fromTop" time2="0.5" ease2="easeIn" clickthrough="0" topmost="1" v="0" l="0" />
-      <subpage name="XBMC_Wall_List" x="0" y="150" j="4004" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="0" topmost="0" v="1" l="0" />
+      <subpage name="XBMC_Media_List" x="0" y="150" j="4004" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="0" topmost="0" v="1" l="0" />
       <subpage name="XBMC_NowPlaying" x="0" y="78" j="4005" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
       <img x="0" y="11" w="601" h="61" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\menu_selection_bg.png</img>
       <btn j="0" x="416" y="11" w="61" h="61" t="menu_playlist" flip="None" sim="1" l="0" s="1" js="myXBMC.buildWall(&quot;playlists&quot;);">
@@ -574,21 +576,40 @@
       <gesture name="New Gesture" type="swipe" direction="right" touches="1">
         <action phase="begin" js="myXBMC.catchGesture(gesture)" />
       </gesture>
-      <img x="0" y="48" w="1920" h="1080" j="5035" clickthrough="1" refresh="0" l="0" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
-      <subpage name="Yatse_Wall" x="0" y="81" j="5010" transition1="push" subtype1="fromRight" time1="1" ease1="" transition2="push" subtype2="fromRight" time2="1" ease2="" clickthrough="1" topmost="0" v="0" l="0" />
-      <subpage name="Yatse_Controls" x="0" y="80" j="5011" transition1="push" subtype1="fromLeft" time1="1" ease1="" transition2="push" subtype2="fromLeft" time2="1" ease2="" clickthrough="1" topmost="0" v="1" l="1" />
+      <img x="0" y="48" w="1920" h="1080" j="5035" clickthrough="1" refresh="0" l="1" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
+      <subpage name="Yatse_Media_Page" x="0" y="81" j="5010" transition1="push" subtype1="fromRight" time1="1" ease1="" transition2="push" subtype2="fromRight" time2="1" ease2="" clickthrough="1" topmost="0" v="1" l="0" />
+      <subpage name="Yatse_Controls" x="0" y="80" j="5011" transition1="push" subtype1="fromLeft" time1="1" ease1="" transition2="push" subtype2="fromLeft" time2="1" ease2="" clickthrough="1" topmost="0" v="0" l="1" />
       <subpage name="Yatse_SideMenu" x="0" y="0" j="5001" transition1="moveIn" subtype1="fromLeft" time1="1" ease1="easeOut" transition2="moveIn" subtype2="fromLeft" time2="1" ease2="easeIn" clickthrough="1" topmost="1" v="0" l="0" />
       <subpage name="Yatse_Popup_Hider" x="0" y="0" j="5015" transition1="fade" subtype1="None" time1="0.5" ease1="" transition2="fade" subtype2="None" time2="0.5" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
       <subpage name="Yatse_Done_Button" x="0" y="0" j="5004" transition1="moveIn" subtype1="fromLeft" time1="1" ease1="" transition2="moveIn" subtype2="fromLeft" time2="1" ease2="" clickthrough="0" topmost="1" v="0" l="0" />
       <subpage name="Yatse_Special_Commands" x="550" y="57" j="5005" transition1="fade" subtype1="None" time1="0.5" ease1="" transition2="fade" subtype2="None" time2="0.5" ease2="" clickthrough="0" topmost="1" v="0" l="0" />
       <subpage name="Yatse_SubCommands" x="550" y="155" j="5006" transition1="fade" subtype1="None" time1="0.5" ease1="" transition2="fade" subtype2="None" time2="0.5" ease2="" clickthrough="0" topmost="1" v="0" l="0" />
       <subpage name="Yatse_TVGuide" x="0" y="81" j="5012" transition1="push" subtype1="None" time1="1" ease1="" transition2="push" subtype2="None" time2="1" ease2="" clickthrough="1" topmost="0" v="0" l="0" />
-      <subpage name="Yatse_Diagnostics" x="710" y="414" j="5008" transition1="fade" subtype1="None" time1="1" ease1="" transition2="fade" subtype2="None" time2="1" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
+      <subpage name="Yatse_Diagnostics" x="710" y="247" j="5008" transition1="fade" subtype1="None" time1="1" ease1="" transition2="fade" subtype2="None" time2="1" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
       <subpage name="Yatse_PC_Commands" x="1356" y="81" j="5007" transition1="moveIn" subtype1="fromTop" time1="0.5" ease1="easeOut" transition2="moveIn" subtype2="fromTop" time2="0.5" ease2="easeIn" clickthrough="0" topmost="0" v="0" l="0" />
       <subpage name="Yatse_Topbar" x="0" y="0" j="5002" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="1" topmost="1" v="1" l="1" />
       <subpage name="Yatse_Topbar_Active" x="0" y="0" j="5003" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="1" topmost="1" v="0" l="0" />
       <subpage name="Yatse_MySQL_Settings" x="558" y="479" j="5014" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
       <subpage name="Yatse_XBMC_Configuration" x="558" y="275" j="5013" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
+      <subpage name="Yatse_Loading_Slider" x="804" y="561" j="5016" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="1" topmost="0" v="1" l="1" />
+      <btn j="5045" x="995" y="634" w="5" h="6" t="loading_dot" flip="None" sim="0" l="0" s="1">
+        <inactive s="0">
+        </inactive>
+        <active s="0">
+        </active>
+      </btn>
+      <btn j="5046" x="1000" y="634" w="5" h="6" t="loading_dot" flip="None" sim="0" l="0" s="1">
+        <inactive s="0">
+        </inactive>
+        <active s="0">
+        </active>
+      </btn>
+      <btn j="5047" x="1005" y="634" w="5" h="6" t="loading_dot" flip="None" sim="0" l="0" s="1">
+        <inactive s="0">
+        </inactive>
+        <active s="0">
+        </active>
+      </btn>
     </landscape>
   </page>
   <page name="Preload" j="10000" transition="fade" subtype="None" time="2" ease="" start="1">
@@ -1677,7 +1698,7 @@ Drama</txt>
       <active s="0">COMMS UP</active>
     </btn>
   </subpage>
-  <subpage name="XBMC_Wall_List_Item" w="1920" h="415" clip="1">
+  <subpage name="XBMC_Media_List_Item" w="1920" h="415" clip="1">
     <txt j="21" x="5" y="355" w="230" h="30" t="XBMC_Wall_Item_Title" wrap="False" l="0">Item Title</txt>
     <txt j="41" x="5" y="385" w="230" h="25" t="XBMC_Wall_Item_Date" wrap="False" l="0">Item Title pqy</txt>
     <img x="5" y="5" w="230" h="345" j="1" clickthrough="1" refresh="0" l="0" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
@@ -2151,7 +2172,7 @@ Drama</txt>
       </active>
     </btn>
     <img x="143" y="362" w="377" h="377" j="201" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">dials\volume_knob_light_off.png</img>
-    <img x="143" y="362" w="377" h="377" j="201" clickthrough="0" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\transparent.png<gesture name="New Gesture" type="tap" taps="1" touches="1"><action phase="begin" js="myDial.rotateToPoint(gesture.x, gesture.y)" /></gesture><gesture name="New Gesture" type="pan" taps="1" touches="1"><action phase="change" js="myDial.rotateToPoint(gesture.x, gesture.y)" /><action phase="begin" j="s200" value="dials\volume_knob_light_on.png" /><action phase="end" j="s200" value="dials\volume_knob_light_off.png" /></gesture></img>
+    <img x="143" y="362" w="377" h="377" j="201" clickthrough="0" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\transparent.png<gesture name="New Gesture" type="tap" taps="1" touches="1"><action phase="begin" js="myDial.rotateToPoint(gesture.x, gesture.y)" /></gesture><gesture name="New Gesture" type="pan" taps="1" touches="1"><action phase="change" js="myDial.rotateToPoint(gesture.x, gesture.y)" /></gesture></img>
     <txt j="200" x="221" y="301" w="222" h="52" t="Activity" wrap="False" l="0">%</txt>
     <txt j="5031" x="660" y="782" w="600" h="40" t="Yatse_Main_Title" wrap="False" l="0">Movie Title \ TV Show \ Artist</txt>
     <img x="785" y="259" w="350" h="525" j="5030" clickthrough="0" refresh="0" l="1" noCache="0" downloadIndicator="0" clearOnURLChange="1" />
@@ -2640,14 +2661,14 @@ Drama</txt>
     <txt j="0" x="21" y="309" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Username</txt>
     <txt j="0" x="21" y="419" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Player Type</txt>
     <txt j="0" x="21" y="474" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Player Speed</txt>
-    <txt j="0" x="212" y="99" w="210" h="50" t="Yatse_Wall_Title" wrap="False" l="0">AV Receiver</txt>
-    <txt j="0" x="1" y="99" w="210" h="50" t="Yatse_Wall_Title" wrap="False" l="0">XBMC</txt>
+    <txt j="0" x="212" y="99" w="210" h="50" t="Yatse_Media_List_Title" wrap="False" l="0">AV Receiver</txt>
+    <txt j="0" x="1" y="99" w="210" h="50" t="Yatse_Media_List_Title" wrap="False" l="0">XBMC</txt>
     <txt j="0" x="21" y="199" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Address</txt>
     <txt j="0" x="21" y="254" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Port</txt>
-    <txt j="5082" x="21" y="329" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">xbmc</txt>
+    <txt j="5055" x="21" y="329" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">xbmc</txt>
     <txt j="5083" x="21" y="439" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">?</txt>
-    <txt j="5080" x="21" y="219" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">000.000.000.000</txt>
-    <txt j="5081" x="21" y="274" w="170" h="30" t="yatse_diag_detail_info" wrap="False" l="0">8080</txt>
+    <txt j="5052" x="21" y="219" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">000.000.000.000</txt>
+    <txt j="5053" x="21" y="274" w="170" h="30" t="yatse_diag_detail_info" wrap="False" l="0">8080</txt>
     <txt j="5084" x="21" y="494" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">?</txt>
     <img x="1" y="96" w="632" h="3" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_underline.png</img>
     <btn j="0" x="1" y="1" w="632" h="95" t="yatse_commands_title" flip="None" sim="0" l="0" s="1">
@@ -2676,19 +2697,19 @@ Drama</txt>
     <img x="0" y="0" w="634" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <img x="2" y="634" w="500" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <txt j="0" x="21" y="364" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Password</txt>
-    <txt j="5083" x="21" y="384" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">xbmc</txt>
+    <txt j="5056" x="21" y="384" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">xbmc</txt>
     <txt j="0" x="21" y="524" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Media Type</txt>
     <txt j="5085" x="21" y="544" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">?</txt>
-    <txt j="0" x="423" y="99" w="210" h="50" t="Yatse_Wall_Title" wrap="False" l="0">TV Server</txt>
+    <txt j="0" x="423" y="99" w="210" h="50" t="Yatse_Media_List_Title" wrap="False" l="0">TV Server</txt>
     <btn j="3050" x="423" y="159" w="210" h="30" t="Status" flip="None" sim="0" l="0" s="0">
       <inactive s="0">Disconnected</inactive>
       <active s="0">Connected</active>
     </btn>
     <img x="422" y="99" w="1" h="481" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <txt j="0" x="232" y="279" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Address</txt>
-    <txt j="500" x="232" y="299" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">192.168.10.103</txt>
+    <txt j="500" x="232" y="299" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">000.000.000.000</txt>
     <txt j="0" x="443" y="199" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Address</txt>
-    <txt j="3051" x="443" y="219" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">192.168.10.103</txt>
+    <txt j="3051" x="443" y="219" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">000.000.000.000</txt>
     <txt j="0" x="443" y="254" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Port</txt>
     <txt j="0" x="443" y="309" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Username</txt>
     <txt j="0" x="443" y="374" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Password</txt>
@@ -2764,17 +2785,175 @@ Drama</txt>
     <img x="0" y="0" w="1" h="374" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <img x="802" y="0" w="1" h="374" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
   </subpage>
+  <subpage name="Yatse_Loading_Slider" w="313" h="6" clip="1">
+    <img x="0" y="0" w="313" h="6" j="5016" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\loading-bar-slider.png</img>
+  </subpage>
+  <subpage name="Yatse_Media_List_Item" w="1920" h="415" clip="1">
+    <txt j="21" x="5" y="355" w="230" h="30" t="XBMC_Wall_Item_Title" wrap="False" l="0">Item Title</txt>
+    <txt j="41" x="5" y="385" w="230" h="25" t="XBMC_Wall_Item_Date" wrap="False" l="0">Item Title pqy</txt>
+    <img x="5" y="5" w="230" h="345" j="1" clickthrough="1" refresh="0" l="0" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
+    <btn j="1" x="5" y="5" w="230" h="345" t="" flip="None" sim="1" l="0" s="1">
+      <actions>
+        <action>
+          <press delay="0" hold="1500" repeat="0" js="myXBMC.selectItem(list, listIndex, join, tokens)" />
+          <press delay="0" hold="0" repeat="0" js="myXBMC.playItem(list, listIndex, join, tokens)" />
+        </action>
+      </actions>
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <btn j="61" x="205" y="15" w="17" h="17" t="wifi_led" flip="None" sim="0" l="0" s="1">
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <txt j="22" x="245" y="355" w="230" h="30" t="XBMC_Wall_Item_Title" wrap="False" l="0">Item Title</txt>
+    <txt j="42" x="245" y="380" w="230" h="25" t="XBMC_Wall_Item_Date" wrap="False" l="0">Item Title pqy</txt>
+    <img x="245" y="5" w="230" h="345" j="2" clickthrough="1" refresh="0" l="0" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
+    <btn j="2" x="245" y="5" w="230" h="345" t="" flip="None" sim="1" l="0" s="1">
+      <actions>
+        <action>
+          <press delay="0" hold="0" repeat="0" js="myXBMC.playItem(list, listIndex, join, tokens)" />
+          <press delay="0" hold="1500" repeat="0" js="myXBMC.selectItem(list, listIndex, join, tokens)" />
+        </action>
+      </actions>
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <btn j="62" x="445" y="15" w="17" h="17" t="wifi_led" flip="None" sim="0" l="0" s="1">
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <txt j="23" x="485" y="355" w="230" h="30" t="XBMC_Wall_Item_Title" wrap="False" l="0">Item Title</txt>
+    <txt j="43" x="485" y="380" w="230" h="25" t="XBMC_Wall_Item_Date" wrap="False" l="0">Item Title pqy</txt>
+    <img x="485" y="5" w="230" h="345" j="3" clickthrough="1" refresh="0" l="0" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
+    <btn j="3" x="485" y="5" w="230" h="345" t="" flip="None" sim="1" l="0" s="1">
+      <actions>
+        <action>
+          <press delay="0" hold="0" repeat="0" js="myXBMC.playItem(list, listIndex, join, tokens)" />
+          <press delay="0" hold="1500" repeat="0" js="myXBMC.selectItem(list, listIndex, join, tokens)" />
+        </action>
+      </actions>
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <btn j="63" x="685" y="15" w="17" h="17" t="wifi_led" flip="None" sim="0" l="0" s="1">
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <txt j="24" x="725" y="355" w="230" h="30" t="XBMC_Wall_Item_Title" wrap="False" l="0">Item Title</txt>
+    <txt j="44" x="725" y="380" w="230" h="25" t="XBMC_Wall_Item_Date" wrap="False" l="0">Item Title pqy</txt>
+    <img x="725" y="5" w="230" h="345" j="4" clickthrough="1" refresh="0" l="0" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
+    <btn j="4" x="725" y="5" w="230" h="345" t="" flip="None" sim="1" l="0" s="1">
+      <actions>
+        <action>
+          <press delay="0" hold="0" repeat="0" js="myXBMC.playItem(list, listIndex, join, tokens)" />
+          <press delay="0" hold="1500" repeat="0" js="myXBMC.selectItem(list, listIndex, join, tokens)" />
+        </action>
+      </actions>
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <btn j="64" x="925" y="15" w="17" h="17" t="wifi_led" flip="None" sim="0" l="0" s="1">
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <txt j="25" x="965" y="355" w="230" h="30" t="XBMC_Wall_Item_Title" wrap="False" l="0">Item Title</txt>
+    <txt j="45" x="965" y="380" w="230" h="25" t="XBMC_Wall_Item_Date" wrap="False" l="0">Item Title pqy</txt>
+    <img x="965" y="5" w="230" h="345" j="5" clickthrough="1" refresh="0" l="0" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
+    <btn j="5" x="965" y="5" w="230" h="345" t="" flip="None" sim="1" l="0" s="1">
+      <actions>
+        <action>
+          <press delay="0" hold="0" repeat="0" js="myXBMC.playItem(list, listIndex, join, tokens)" />
+          <press delay="0" hold="1500" repeat="0" js="myXBMC.selectItem(list, listIndex, join, tokens)" />
+        </action>
+      </actions>
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <btn j="65" x="1165" y="15" w="17" h="17" t="wifi_led" flip="None" sim="0" l="0" s="1">
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <txt j="26" x="1205" y="355" w="230" h="30" t="XBMC_Wall_Item_Title" wrap="False" l="0">Item Title</txt>
+    <txt j="46" x="1205" y="380" w="230" h="25" t="XBMC_Wall_Item_Date" wrap="False" l="0">Item Title pqy</txt>
+    <img x="1205" y="5" w="230" h="345" j="6" clickthrough="1" refresh="0" l="0" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
+    <btn j="6" x="1205" y="5" w="230" h="345" t="" flip="None" sim="1" l="0" s="1" js="myXBMC.playItem(list, listIndex, join, tokens)">
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <btn j="66" x="1405" y="15" w="17" h="17" t="wifi_led" flip="None" sim="0" l="0" s="1">
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <txt j="27" x="1445" y="355" w="230" h="30" t="XBMC_Wall_Item_Title" wrap="False" l="0">Item Title</txt>
+    <txt j="47" x="1445" y="380" w="230" h="25" t="XBMC_Wall_Item_Date" wrap="False" l="0">Item Title pqy</txt>
+    <img x="1445" y="5" w="230" h="345" j="7" clickthrough="1" refresh="0" l="0" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
+    <btn j="7" x="1445" y="5" w="230" h="345" t="" flip="None" sim="1" l="0" s="1" js="myXBMC.playItem(list, listIndex, join, tokens)">
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <btn j="67" x="1645" y="15" w="17" h="17" t="wifi_led" flip="None" sim="0" l="0" s="1">
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <txt j="28" x="1685" y="355" w="230" h="30" t="XBMC_Wall_Item_Title" wrap="False" l="0">Item Title</txt>
+    <txt j="48" x="1685" y="380" w="230" h="25" t="XBMC_Wall_Item_Date" wrap="False" l="0">Item Title pqy</txt>
+    <img x="1685" y="5" w="230" h="345" j="8" clickthrough="1" refresh="0" l="0" noCache="1" downloadIndicator="0" clearOnURLChange="1" />
+    <btn j="8" x="1685" y="5" w="230" h="345" t="" flip="None" sim="1" l="0" s="1" js="myXBMC.playItem(list, listIndex, join, tokens)">
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+    <btn j="68" x="1890" y="15" w="17" h="17" t="wifi_led" flip="None" sim="0" l="0" s="1">
+      <inactive s="0">
+      </inactive>
+      <active s="0">
+      </active>
+    </btn>
+  </subpage>
   <subpage name="TV_Guide_Multi_List" w="1920" h="996" clip="1">
     <img x="0" y="0" w="175" h="1040" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\tv_logos_bg.png</img>
     <list j="1" x="0" y="0" w="1920" h="996" headerSub="" titleSub="" contentSub="TV_Guide_Mutli_Item" footerSub="" orientation="v" l="0" swipedelete="0" />
   </subpage>
-  <subpage name="XBMC_Wall_List" w="1920" h="978" clip="1">
-    <list j="4004" x="0" y="0" w="1920" h="978" headerSub="" titleSub="" contentSub="XBMC_Wall_List_Item" footerSub="" orientation="v" l="0" swipedelete="0" />
+  <subpage name="XBMC_Media_List" w="1920" h="978" clip="1">
+    <list j="4004" x="0" y="0" w="1920" h="978" headerSub="" titleSub="" contentSub="XBMC_Media_List_Item" footerSub="" orientation="v" l="0" swipedelete="0" />
   </subpage>
-  <subpage name="Yatse_Wall" w="1920" h="1047" clip="1">
-    <list j="5041" x="0" y="54" w="1920" h="989" headerSub="" titleSub="" contentSub="XBMC_Wall_List_Item" footerSub="" orientation="v" l="0" swipedelete="0" />
-    <img x="0" y="52" w="1920" h="3" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_underline.png</img>
-    <txt j="5040" x="810" y="0" w="300" h="52" t="Yatse_Wall_Title" wrap="False" l="0">Movies</txt>
+  <subpage name="Yatse_Media_Page" w="1920" h="1047" clip="1">
+    <list j="5041" x="0" y="54" w="1920" h="989" headerSub="" titleSub="" contentSub="Yatse_Media_List_Item" footerSub="" orientation="v" l="1" swipedelete="0" />
+    <img x="0" y="52" w="1920" h="3" j="0" clickthrough="1" refresh="0" l="1" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_underline.png</img>
+    <txt j="5041" x="810" y="0" w="300" h="52" t="Yatse_Media_List_Title" wrap="False" l="1">Movies</txt>
     <img x="954" y="45" w="12" h="6" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_wall_title_triangle.png</img>
+    <img x="926" y="543" w="68" h="20" j="5044" clickthrough="1" refresh="0" l="1" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\loading-text.png</img>
+    <img x="20" y="74" w="490" h="40" j="5048" clickthrough="1" refresh="0" l="1" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\no-media-found.png</img>
+    <img x="788" y="471" w="343" h="24" j="5043" clickthrough="1" refresh="0" l="1" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\loading-bar-base.png</img>
   </subpage>
 </gui>

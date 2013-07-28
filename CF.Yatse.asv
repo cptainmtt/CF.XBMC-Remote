@@ -78,7 +78,7 @@
       <cmd name="Yatse Change Host to Openelec" js="CF.getURL(&quot;yatse://select/media_center?ID=5&quot;)" jsSendsCommand="False" />
       <cmd name="myXBMC Seek" js="myXBMC.seek(analog)" jsSendsCommand="False">[sliderval]</cmd>
     </system>
-    <system name="XBMC" ip="" origin="10207" port="9090" protocol="tcp" alwayson="1" offlinequeue="1" accept="0" acceptBroadcasts="0" ssl="0" maxconnections="0" heartbeatRx="{&quot;id&quot;:0,&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;result&quot;:&quot;pong&quot;}" heartbeatTx="{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;method&quot;:&quot;JSONRPC.Ping&quot;,&quot;params&quot;:{},&quot;id&quot;:0}" heartbeatMode="1" eom="" connectionStatus="0" disconnectionStatus="0">
+    <system name="XBMC" ip="192.168.10.103" origin="10207" port="9090" protocol="tcp" alwayson="1" offlinequeue="1" accept="0" acceptBroadcasts="0" ssl="0" maxconnections="0" heartbeatRx="{&quot;id&quot;:0,&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;result&quot;:&quot;pong&quot;}" heartbeatTx="{&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;method&quot;:&quot;JSONRPC.Ping&quot;,&quot;params&quot;:{},&quot;id&quot;:0}" heartbeatMode="-1" eom="" connectionStatus="4001" disconnectionStatus="0">
       <cmd name="Left" folder="Input">{"jsonrpc": "2.0", "method": "Input.Left", "params": {  }, "id": 1 }</cmd>
       <cmd name="Right" folder="Input">{"jsonrpc": "2.0", "method": "Input.Right", "params": {  }, "id": 1 }</cmd>
       <cmd name="Up" folder="Input">{"jsonrpc": "2.0", "method": "Input.Up", "params": {  }, "id": 1 }</cmd>
@@ -211,7 +211,7 @@
     <theme type="button" name=".tv_program_dark[state='1']"><![CDATA[padding: 10px 10px 10px 10px;  filter: Alpha(Opacity=50); -moz-opacity:0.5; opacity: 0.5; background-color: #08CEFF; color: White; font-size: 18px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: left; vertical-align: top; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
     <theme type="background" name=".yellow"><![CDATA[background-color: #FFFF00;]]></theme>
     <theme type="button" name=".Status[state='0']"><![CDATA[padding: 0px 0px 0px 0px; color: Red; font-size: 22px; font-name: 'Roboto-Bold'; font-family: 'Roboto'; font-weight: bold; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
-    <theme type="button" name=".Status[state='1']"><![CDATA[padding: 0px 0px 0px 0px; color: Lime; font-size: 18px; font-name: 'Roboto-Bold'; font-family: 'Roboto'; font-weight: bold; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
+    <theme type="button" name=".Status[state='1']"><![CDATA[padding: 0px 0px 0px 0px; color: Lime; font-size: 22px; font-name: 'Roboto-Bold'; font-family: 'Roboto'; font-weight: bold; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
     <theme type="text" name=".TV_episode_title"><![CDATA[ color: #D5D5D5; font-size: 16px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: left; vertical-align: top; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
     <theme type="text" name=".TV_program_title"><![CDATA[ color: #EEEEEE; font-size: 26px; font-name: 'Roboto-Bold'; font-family: 'Roboto'; text-align: left; vertical-align: top; font-weight: bold; font-style: none; text-decoration: none; display: table-cell;]]></theme>
     <theme type="text" name=".TV_episode_time"><![CDATA[ color: #83CCDB; font-size: 16px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: left; vertical-align: bottom; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
@@ -301,7 +301,7 @@
     <theme type="button" name=".btn_black_75p[state='0']"><![CDATA[padding: 0px 0px 0px 0px;  filter: Alpha(Opacity=75); -moz-opacity:0.75; opacity: 0.75; background-color: #000000; color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
     <theme type="button" name=".btn_black_75p[state='1']"><![CDATA[padding: 0px 0px 0px 0px;  filter: Alpha(Opacity=75); -moz-opacity:0.75; opacity: 0.75; background-color: #000000; color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
     <theme type="text" name=".Yatse_player_time"><![CDATA[ color: #6E6E6E; font-size: 20px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: center; vertical-align: middle; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
-    <theme type="text" name=".yatse_diag_detail_header"><![CDATA[ color: Gray; font-size: 14px; font-name: 'Roboto-Bold'; font-family: 'Roboto'; text-align: center; vertical-align: middle; font-weight: bold; font-style: none; text-decoration: none; display: table-cell;]]></theme>
+    <theme type="text" name=".yatse_diag_detail_header"><![CDATA[ color: Gray; font-size: 16px; font-name: 'Roboto-Bold'; font-family: 'Roboto'; text-align: center; vertical-align: middle; font-weight: bold; font-style: none; text-decoration: none; display: table-cell;]]></theme>
     <theme type="text" name=".yatse_diag_detail_info"><![CDATA[ color: White; font-size: 22px; font-name: 'Roboto'; font-family: 'Roboto'; text-align: center; vertical-align: middle; font-weight: normal; font-style: none; text-decoration: none; display: table-cell;]]></theme>
     <theme type="button" name=".yatse_transport_play_pause[state='0']"><![CDATA[padding: 0px 0px 0px 0px; background-image: url(buttons\yatse_transport_pause.png); color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
     <theme type="button" name=".yatse_transport_play_pause[state='1']"><![CDATA[padding: 0px 0px 0px 0px; background-image: url(buttons\yatse_transport_play.png); color: White; font-size: 12px; font-family: 'Verdana'; font-weight: normal; font-style: none; text-decoration: none; text-align: center; vertical-align: middle; display: table-cell; box-sizing: border-box; -webkit-box-sizing: border-box; -webkit-tap-highlight-color:rgba(0,0,0,0);]]></theme>
@@ -582,7 +582,7 @@
       <subpage name="Yatse_Special_Commands" x="550" y="57" j="5005" transition1="fade" subtype1="None" time1="0.5" ease1="" transition2="fade" subtype2="None" time2="0.5" ease2="" clickthrough="0" topmost="1" v="0" l="0" />
       <subpage name="Yatse_SubCommands" x="550" y="155" j="5006" transition1="fade" subtype1="None" time1="0.5" ease1="" transition2="fade" subtype2="None" time2="0.5" ease2="" clickthrough="0" topmost="1" v="0" l="0" />
       <subpage name="Yatse_TVGuide" x="0" y="81" j="5012" transition1="push" subtype1="None" time1="1" ease1="" transition2="push" subtype2="None" time2="1" ease2="" clickthrough="1" topmost="0" v="0" l="0" />
-      <subpage name="Yatse_Diagnostics" x="710" y="414" j="5008" transition1="fade" subtype1="None" time1="1" ease1="" transition2="fade" subtype2="None" time2="1" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
+      <subpage name="Yatse_Diagnostics" x="710" y="247" j="5008" transition1="fade" subtype1="None" time1="1" ease1="" transition2="fade" subtype2="None" time2="1" ease2="" clickthrough="0" topmost="0" v="0" l="0" />
       <subpage name="Yatse_PC_Commands" x="1356" y="81" j="5007" transition1="moveIn" subtype1="fromTop" time1="0.5" ease1="easeOut" transition2="moveIn" subtype2="fromTop" time2="0.5" ease2="easeIn" clickthrough="0" topmost="0" v="0" l="0" />
       <subpage name="Yatse_Topbar" x="0" y="0" j="5002" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="1" topmost="1" v="1" l="1" />
       <subpage name="Yatse_Topbar_Active" x="0" y="0" j="5003" transition1="None" subtype1="None" time1="0" ease1="" transition2="None" subtype2="None" time2="0" ease2="" clickthrough="1" topmost="1" v="0" l="0" />
@@ -2150,7 +2150,7 @@ Drama</txt>
       </active>
     </btn>
     <img x="143" y="362" w="377" h="377" j="201" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">dials\volume_knob_light_off.png</img>
-    <img x="143" y="362" w="377" h="377" j="201" clickthrough="0" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\transparent.png<gesture name="New Gesture" type="tap" taps="1" touches="1"><action phase="begin" js="myDial.rotateToPoint(gesture.x, gesture.y)" /></gesture><gesture name="New Gesture" type="pan" taps="1" touches="1"><action phase="change" js="myDial.rotateToPoint(gesture.x, gesture.y)" /><action phase="begin" j="s200" value="dials\volume_knob_light_on.png" /><action phase="end" j="s200" value="dials\volume_knob_light_off.png" /></gesture></img>
+    <img x="143" y="362" w="377" h="377" j="201" clickthrough="0" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\transparent.png<gesture name="New Gesture" type="tap" taps="1" touches="1"><action phase="begin" js="myDial.rotateToPoint(gesture.x, gesture.y)" /></gesture><gesture name="New Gesture" type="pan" taps="1" touches="1"><action phase="change" js="myDial.rotateToPoint(gesture.x, gesture.y)" /></gesture></img>
     <txt j="200" x="221" y="301" w="222" h="52" t="Activity" wrap="False" l="0">%</txt>
     <txt j="5031" x="660" y="782" w="600" h="40" t="Yatse_Main_Title" wrap="False" l="0">Movie Title \ TV Show \ Artist</txt>
     <img x="785" y="259" w="350" h="525" j="5030" clickthrough="0" refresh="0" l="1" noCache="0" downloadIndicator="0" clearOnURLChange="1" />
@@ -2643,13 +2643,13 @@ Drama</txt>
     <txt j="0" x="1" y="99" w="210" h="50" t="Yatse_Wall_Title" wrap="False" l="0">XBMC</txt>
     <txt j="0" x="21" y="199" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Address</txt>
     <txt j="0" x="21" y="254" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Port</txt>
-    <txt j="5082" x="21" y="329" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">xbmc</txt>
+    <txt j="5055" x="21" y="329" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">xbmc</txt>
     <txt j="5083" x="21" y="439" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">?</txt>
-    <txt j="5080" x="21" y="219" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">000.000.000.000</txt>
-    <txt j="5081" x="21" y="274" w="170" h="30" t="yatse_diag_detail_info" wrap="False" l="0">8080</txt>
+    <txt j="5052" x="21" y="219" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">000.000.000.000</txt>
+    <txt j="5053" x="21" y="274" w="170" h="30" t="yatse_diag_detail_info" wrap="False" l="0">8080</txt>
     <txt j="5084" x="21" y="494" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">?</txt>
-    <img x="0" y="96" w="632" h="3" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_underline.png</img>
-    <btn j="0" x="0" y="1" w="502" h="95" t="yatse_commands_title" flip="None" sim="0" l="0" s="1">
+    <img x="1" y="96" w="632" h="3" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_underline.png</img>
+    <btn j="0" x="1" y="1" w="632" h="95" t="yatse_commands_title" flip="None" sim="0" l="0" s="1">
       <inactive s="0">Diagnostics</inactive>
       <active s="0">Diagnostics</active>
     </btn>
@@ -2670,12 +2670,12 @@ Drama</txt>
       <active s="0">Connected</active>
     </btn>
     <img x="211" y="99" w="1" h="481" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
-    <img x="0" y="0" w="1" h="359" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="0" y="0" w="1" h="580" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <img x="633" y="0" w="1" h="580" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
-    <img x="0" y="0" w="500" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
-    <img x="2" y="579" w="500" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="0" y="0" w="634" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="2" y="634" w="500" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <txt j="0" x="21" y="364" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Password</txt>
-    <txt j="5083" x="21" y="384" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">xbmc</txt>
+    <txt j="5056" x="21" y="384" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">xbmc</txt>
     <txt j="0" x="21" y="524" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Media Type</txt>
     <txt j="5085" x="21" y="544" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">?</txt>
     <txt j="0" x="423" y="99" w="210" h="50" t="Yatse_Wall_Title" wrap="False" l="0">TV Server</txt>
@@ -2685,9 +2685,9 @@ Drama</txt>
     </btn>
     <img x="422" y="99" w="1" h="481" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <txt j="0" x="232" y="279" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Address</txt>
-    <txt j="500" x="232" y="299" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">192.168.10.103</txt>
+    <txt j="500" x="232" y="299" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">000.000.000.000</txt>
     <txt j="0" x="443" y="199" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Address</txt>
-    <txt j="3051" x="443" y="219" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">192.168.10.103</txt>
+    <txt j="3051" x="443" y="219" w="170" h="25" t="yatse_diag_detail_info" wrap="False" l="0">000.000.000.000</txt>
     <txt j="0" x="443" y="254" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Port</txt>
     <txt j="0" x="443" y="309" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Username</txt>
     <txt j="0" x="443" y="374" w="170" h="20" t="yatse_diag_detail_header" wrap="False" l="0">Password</txt>
@@ -2726,8 +2726,8 @@ Drama</txt>
     <input j="5054" s="5054" x="407" y="338" w="386" h="50" pass="0" autoFocus="0" f="0" t="Yatse_Settings_Input" l="0">
     </input>
     <txt j="0" x="10" y="338" w="386" h="50" t="Yatse_Settings_text" wrap="False" l="0">XBMC MAC Address</txt>
-    <img x="0" y="0" w="1" h="519" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
-    <img x="802" y="0" w="1" h="519" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="0" y="0" w="1" h="578" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
+    <img x="802" y="0" w="1" h="578" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <img x="0" y="0" w="803" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <img x="0" y="577" w="803" h="1" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_commands_separator.png</img>
     <input j="5051" s="5051" x="407" y="158" w="386" h="50" pass="0" autoFocus="1" f="0" t="Yatse_Settings_Input" l="0">

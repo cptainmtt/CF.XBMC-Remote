@@ -20,9 +20,10 @@ var DenonAVR2312 = function(systemName) {
 	var intervalID = null;
 	var jsonTimeout = 1000;
 	var query = new Array();
-	var queryCount = 0;
+	var lastQueryCommand;
 	var initComplete = false;
 	var currentPage = null;
+
 
 	try {
 		var self = {
@@ -32,7 +33,10 @@ var DenonAVR2312 = function(systemName) {
 								level:	200,	// A + S
 								mute:	203,	// D
 						},
-						connected:	500,	// D(status)
+						connected:	{
+									join:	500,	// D(status)
+									value:	0,
+						},
 						address:	500,	// S(text)
 						power:		501,
 						comms:		504,
@@ -52,14 +56,14 @@ var DenonAVR2312 = function(systemName) {
 		CF.setSystemProperties(self.systemName, {
 		    enabled: true,
 		    address: ip,
-		    connect: self.joins.connected,
+		    connect: self.joins.connected.join,
 		});
 		*/
-
+		consolelog("Running DenonAVR2312.setup()");
 		CF.watch(CF.FeedbackMatchedEvent, self.systemName, "AmpCatchAll", onTCPFeedback);
 		CF.watch(CF.ConnectionStatusChangeEvent, self.systemName, onConnectionStatusChange, true);
 
-		CF.watch(CF.JoinChangeEvent, "d"+self.joins.connected, onConnectedChange);
+		CF.watch(CF.JoinChangeEvent, "d"+self.joins.connected.join, onConnectedChange);
 		CF.watch(CF.JoinChangeEvent, "a"+self.joins.volume.level, onVolumeChange);
 		CF.watch(CF.JoinChangeEvent, "d"+self.joins.volume.mute, onDigitalChange);
 		CF.watch(CF.PageFlipEvent, onPageFlip, true);
@@ -81,25 +85,27 @@ var DenonAVR2312 = function(systemName) {
 			consolelog("There are " + CF.systems[systemName].connections.length + " systems currently connected...");
 			if ( CF.systems[systemName].connections.length > 0 ) {
 				if ( initComplete == false && parameter == "?") {
-					status = null;
+					var status;
 					switch(command) {
 						case "PW":
 							status = "power";
 							break;
 						case "SV":
+						case "MV":
 							status = "volume";
 							break;
 						case "MU":
 							status = "mute";
 							break;
 					}
-					if ( status != null && currentPage == "Preload") QueueInitMsg("syncing amplifier " + status + " status...");
+
+					if ( typeof status != "undefined" && currentPage == "Preload") QueueInitMsg("syncing amplifier " + status + " status...");
 				}
-				//CF.setJoin("d"+self.joins.connected, 1);
+				//CF.setJoin("d"+self.joins.connected.join, 1);
 				var ascii = (command) + (parameter) + "\x0D";
 				consolelog("Sending ASCII command -> " + ascii);
 				CF.send(self.systemName, ascii);
-			} //else CF.setJoin("d"+self.joins.connected, 0);
+			} //else CF.setJoin("d"+self.joins.connected.join, 0);
 		} catch (e) {
 			CFlog("Exception caught while processing response in DenonAVR2312.tcp() - " + e);
 		}
@@ -112,24 +118,26 @@ var DenonAVR2312 = function(systemName) {
 			consolelog("TCP full response = " + matchedString);
 			command = matchedString.substr(0, 2);
 			parameter = matchedString.substr(2).trim();
-			consolelog("TCP response: command =  " + command + ", parameter = " + parameter + ". Last query command = " + query[0]);
+			consolelog("TCP response: command =  " + command + ", parameter = " + parameter + ". Last query command = " + lastQueryCommand);
 
-			if ( query[0] == command.toUpperCase() ) {
+			if ( lastQueryCommand == command.toUpperCase() ) {
 				// clear the query queue timeout
 				console.log(query);
-				match = query.shift(); // remove the received(1st) query from the queue
-				consolelog("match = " + match);
+				//match = query.shift(); // remove the received(1st) query from the queue
+				//match = lastQueryCommand;
+				//consolelog("match = " + match);
+				lastQueryCommand = null;
 				clearTimeout(timeoutID);
 				timeoutID = null;
-			} else match = null; // flag response as non-requested
+			}// else match = null; // flag response as non-requested
 
-			CF.setJoin("d"+self.joins.connected, 1); // update connected status
+			CF.setJoin("d"+self.joins.connected.join, 1); // update connected status
 
 			switch (command) {
 				case "MV":
 					// Only sends responses to set volume level
 					consolelog("Updating volume status on GUI");
-					if (match == null) self.setVolume({"ASCII" : parameter}); // only set volume if not requested/queried
+					self.setVolume({"ASCII" : parameter});
 					break;
 				case "MU":
 					consolelog("Updating mute status on GUI");
@@ -153,30 +161,34 @@ var DenonAVR2312 = function(systemName) {
 		if (connected) {
 				//self.action("ZONE2", "MUTE", "OFF"); // initialise for heartbeat
 
-			CF.setJoin("d"+self.joins.connected, 1);
+			CF.setJoin("d"+self.joins.connected.join, 1);
 
 				//self.query("POWER"); // use to ping amp for connection test? -- won't work atm until connected join = 1
 		} else {
 			// reset joins
 			CF.setJoins([
-				{ join: "d"+self.joins.connected,	value: 0 },
+				{ join: "d"+self.joins.connected.join,	value: 0 },
 				{ join: "d"+self.joins.power,		value: 0 },
 			]);
 		}
 	};
 
 	function onConnectedChange(join, value, tokens) {
-		consolelog("Connected join (d" + self.joins.connected + ") changed to = " + value);
+		self.joins.connected.value = value;
+		consolelog("Connected join (d" + self.joins.connected.join + ") changed to = " + value);
 		if ( value === 1 ) {
 			self.query("POWER");		// sync power state
 			self.query("VOLUME");		// sync volume knob
 			self.query("MUTE");		// sync mute button
 			if ( !(initComplete) ) {
 				var id = setInterval(function() {
+					consolelog("query.length = " + query.length);
 					if (query.length == 0) {
 						clearInterval(id);
 						id = null;
 						QueueInitMsg("amplifier initialisation complete...");
+						consolelog("amplifier initialisation complete...");
+						initComplete = true;
 					}
 				}, 200);
 			}
@@ -186,7 +198,7 @@ var DenonAVR2312 = function(systemName) {
 	function onVolumeChange(join, value, tokens) {
 		// possible loop here??
 		consolelog("AVR2312.onVolumeChange(" + join + ", " + value + ", " + tokens + ")");
-		self.action("VOLUME", self.getVolume({"percentage": value}));
+		//if (tokens["[action]"]) self.action("VOLUME", self.getVolume({"percentage": value})); // DISABLED WHILE TESTING DIAL
 		CF.setJoin("s"+self.joins.volume.level, (value + "%"));
 	}
 
@@ -211,35 +223,46 @@ var DenonAVR2312 = function(systemName) {
 	};
 
 	self.setVolume = function( vol ) {
+		var volume;
+		var event = true;
 		if ( "ASCII" in vol ) {
 			// sent by Denon AVR-2312
 			// Percentage set from 1% -> 100%
 			// Mute = 0%
-			// TEST VALUE = 145 || 14 || 99 || 98
+			// TEST VALUE = 145 || 17 || 99 || 98
+			consolelog("vol.ASCII = " + vol.ASCII);
+			consolelog("typeof vol.ASCII = " + typeof vol.ASCII);
+			//if ( typeof vol.ASCII == "string" ) volume = parseFloat(vol.ASCII);
 			volume = parseFloat(vol.ASCII);
 			consolelog("setVolume #1 = " + volume);
 
 			if ( volume > 99 ) volume /= 10;
-			consolelog("setVolume #2 = " + volume); // 14.5 || 14 || 99 || 98
+			consolelog("setVolume #2 = " + volume); // 14.5 || 17 || 99 || 98
 
-			volume += 2; // 16.5 || 16 || 101 || 100
+			volume += 1; // 16.5 || 18 || 101 || 100
 			if ( volume > 100 ) volume = parseFloat(volume.toString().substr(1));
-			consolelog("setVolume #3 = " + volume); // 16.5 || 16 || 1 || 100
-
-		} else if ( "percentage" in vol && vol.percentage >= 1 && vol.percentage <= 100 ) {
+			consolelog("setVolume #3 = " + volume); // 16.5 || 18 || 1 || 100
+			action = false; // dont send join change event so as not to retrigger command to amp
+		} else if ( "percentage" in vol && vol.percentage >= 1 && vol.percentage <= 100 ) {  // CHECK IF MINIMUM VALUE CAN BE 0%
 			// sent by UI
-			volume = vol.percentage;
+			// round to nearest 0.5
+			volume = round(parseFloat(vol.percentage)*2) / 2;
+			consolelog("Percentage volume rounded to nearest 0.5 = " + volume);
+			action = true; // send join change event to send command to amp
 		}
 
-		if ( typeof volume == "number" && isFinite(volume) && !(isNaN(volume)) && volume != NaN) {
-			consolelog("AVR23212.setVolume(): Update a" + self.joins.volume.level + " = " + volume);
+		if ( typeof volume == "number" && isFinite(volume) && !(isNaN(volume)) && volume !== NaN) {
+			consolelog("Requesting change to volume -> a" + self.joins.volume.level + " = " + volume);
 			CF.getJoin("a"+self.joins.volume.level, function(j, v, t) {
-				if ( v != (volume + "%") ) {
-					consolelog("setVolume(): Update a" + self.joins.volume.level + " = " + volume);
-					CF.setJoin( j, (volume + "%") );
+				// protect against possible loop if watching join change...?
+				if ( v != volume ) {
+					consolelog("setVolume(): Sending update " + j + " = " + volume);
+					// update ANALOG join (analog join is watched to update the SERIAL join and send command to amplifier)
+					// action = true|false => send volume change to amplifier
+					CF.setJoins([ {join: j, value: volume, tokens: {"[action]": action}} ]); // volume = decimal rounded to nearest 0.5 (no % sign)
 				}
 			});
-		}
+		} else consolelog("Disregarding invalid volume level = " + volume);
 	};
 
 	self.getVolume = function(vol) {
@@ -272,6 +295,7 @@ var DenonAVR2312 = function(systemName) {
 
 	// self.action ( "string", "string", "string" )
 	self.action = function(command, parameter, value) {
+		if ( typeof param != "undefined" ) delete param;
 		if ( typeof parameter == "string" ) parameter = parameter.toUpperCase();
 		if ( typeof value == "string" ) value = value.toUpperCase();
 		switch (command.toUpperCase()) {
@@ -508,47 +532,52 @@ var DenonAVR2312 = function(systemName) {
 			query.push(command);
 
 
-			if (intervalID == null) {
+			if (intervalID === null && self.joins.connected.value == 1) {
 				// (re)start sending commands every 200ms
 				intervalID = setInterval(function() {
-					consolelog(queryCount + ". Query command loop (ID = " + intervalID + ") start...\ntimeoutID = " + timeoutID);
-					consolelog(queryCount + ". Query queue length = " + query.length + " - query object --v");
+					consolelog("Query command loop (ID = " + intervalID + ") start...\ntimeoutID = " + timeoutID);
+					consolelog("Query queue length = " + query.length + " - query object --v");
 					console.log(query);
 
 
 					if (query.length == 0) {
 						// query queue is empty to stop running the command loop
-						consolelog(queryCount + ". Query queue is empty - stopping command loop...");
+						consolelog("Query queue is empty - stopping command loop...");
 						clearInterval(intervalID);
 						intervalID = null;
-					} else if ( timeoutID == null ) {
-						timeoutID = ""; // stops block running again before receiving join value below
-						CF.getJoin("d"+self.joins.connected, function(j, v, t) {
-							if ( v === 1 ) {
+					} else if ( timeoutID === null ) {
+						//consolelog("setting timeoutID = ''");
+						//timeoutID = ""; // stops block running again before receiving join value below
+						//consolelog("d+self.joins.connected.join = d+" + self.joins.connected.join);
+						//CF.getJoin("d"+self.joins.connected.join, function(j, v, t) {
+							//consolelog("connected join received ok - value = " + v);
+							//if ( v == 1 ) {
 								// previous query response received (or timed out), so send next command if still connected to device
 								//q = query.shift(); // get first query object
 								//response.push(query.shift()); // get add query to end of response waiting array
 
 								//consolelog("Sending QUERY: command = " + q.command + ", parameter = " + q.parameter);
 								//self.tcp(q.command, q.parameter);
-								consolelog(queryCount + ". Sending QUERY: command = " + query[0] + ", parameter = ?"); // send next command in queue
-								self.tcp(query[0], "?");
-								queryCount++;
+								lastQueryCommand = query.shift();
+								consolelog("Sending QUERY: command = " + lastQueryCommand + ", parameter = ?"); // send next command in queue
+
+								self.tcp(lastQueryCommand, "?");
 								timeoutID = setTimeout(function() {
-									CF.setJoin("d"+self.joins.connected, 0);
-									consolelog(queryCount + ". json response timed out after " + jsonTimeout + "ms");
+									CF.setJoin("d"+self.joins.connected.join, 0);
+									consolelog("json response timed out after " + jsonTimeout + "ms");
 									timeoutID = null;
 								}, jsonTimeout);
-							} else {
-								// stop the loop until amp is reconnected
-								clearInterval(intervalID);
-								intervalID = null;
-							}
-						});
+							//} else {
+							//	// stop the loop until amp is reconnected
+							//	consolelog("Clearing intervalID(" + intervalID + ")");
+							//	clearInterval(intervalID);
+							//	intervalID = null;
+							//}
+						//});
 					} else {
-						consolelog(queryCount + ". Query loop passed without running command...");
+						consolelog("Query loop passed without running command...");
 					}
-					consolelog(queryCount + ". Query command loop complete...\n");
+					consolelog("Query command loop complete...\n");
 				}, 200);
 			}
 		}
@@ -568,7 +597,11 @@ var DenonAVR2312 = function(systemName) {
 	// --- Private Function ---
 
 	function QueueInitMsg(msg) {
-		if (typeof msg == "string") self.init.queue.push(msg);
+		try {
+			if (typeof msg == "string") self.init.queue.push(msg);
+		} catch (e) {
+			consolelog("The DenonAVR2312-232 initialisation message queue has been disabled - " + e);
+		}
 	}
 
 	function consolelog(msg) {

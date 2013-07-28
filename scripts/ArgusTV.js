@@ -225,7 +225,7 @@ var ArgusTV = function(join, params) {
 			// params.endTime = integer (hours after start time)
 			json.UpperTime = ( "endTime" in params && typeof params.endTime.getMonth == "function" ) ? params.endTime.valueOf() : null; // ??? not sure if this will work....
 
-			if (json.UpperTime == null ) {
+			if (json.UpperTime === null ) {
 				json.UpperTime = ("endTime" in params && typeof endTime == "number") ? abs(endTime) : 6; // default to 6 hours later
 				json.UpperTime = (+new Date) + json.UpperTime * 60 * 60 * 1000;
 			}
@@ -303,7 +303,7 @@ var ArgusTV = function(join, params) {
 		/*
 		timeID = setTimeout
 		intID = setInterval(function() {
-			if ( channels != null ) {
+			if ( channels !== null ) {
 				clearInterval(intID);
 				clearTimeout(timeID);
 			};

@@ -236,29 +236,35 @@ var XBMC_GUI = function() {
 		]);
 	};
 
-	self.loadMediaList = function(param) {
+	self.loadMediaList = function(params) {
 		try {
 			var updatingLists = updatingLists || {};
 			// string test
-			updatingLists[XBMC.in_array(param.type.toLowerCase(), XBMC.mediaListTypes, false)] = param.force || false;
+			updatingLists[XBMC.in_array(params.type.toLowerCase(), XBMC.mediaListTypes, false)] = param.force || false;
 		} catch (e) {
 			try {
 				// array test
-				while(prop = param.type.shift()) updatingLists[XBMC.in_array(prop, XBMC.mediaListTypes, false)] = param.force || false;
+				while(prop = params.type.shift()) updatingLists[XBMC.in_array(prop, XBMC.mediaListTypes, false)] = params.force || false;
 			} catch (e) {
 				try {
 					// object test
 					//for (var prop in param.type) this[XBMC.in_array(prop, XBMC.mediaListTypes, false)] = true;
-					for (var prop in param.type) {
-						if( param.type.hasOwnProperty(prop) && (type = XBMC.in_array(prop, XBMC.mediaListTypes, false)) ) updatingLists[type] = param.force || false;
+					for (var prop in params.type) {
+						if( params.type.hasOwnProperty(prop) && (type = XBMC.in_array(prop, XBMC.mediaListTypes, false)) ) updatingLists[type] = params.force || false;
 					}
 				} catch (e) {
 					console.log("Failed to find valid type in param argument");
 				}
 			}
 		}
-		if (updatingLists[Object.keys(updatingLists)[0]] || !self.XBMC.mediaList[Object.keys(updatingLists)[0]]) self.XBMC.Get[Object.keys(updatingLists)[0]];
-
+		if (updatingLists[Object.keys(updatingLists)[0]] || !self.XBMC.mediaList[Object.keys(updatingLists)[0]]) {
+			try {
+				self.XBMC.Get[Object.keys(updatingLists)[0]];
+			} catch (e) {
+				consolelog("Finished loading media lists from XBMC...")
+				QueueInitMsg("finishing loading media lists from xbmc...");
+			}
+		}
 	};
 
 	//obj = {type: string, force: boolean, list: array}

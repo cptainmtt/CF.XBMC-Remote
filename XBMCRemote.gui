@@ -2953,7 +2953,7 @@ Drama</txt>
     <txt j="5041" x="810" y="0" w="300" h="52" t="Yatse_Media_List_Title" wrap="False" l="1">Movies</txt>
     <img x="954" y="45" w="12" h="6" j="0" clickthrough="1" refresh="0" l="0" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\yatse_wall_title_triangle.png</img>
     <img x="926" y="543" w="68" h="20" j="5044" clickthrough="1" refresh="0" l="1" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\loading-text.png</img>
-    <img x="20" y="74" w="490" h="40" j="5048" clickthrough="1" refresh="0" l="1" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\no-media-found.png</img>
+    <img x="20" y="74" w="561" h="47" j="5048" clickthrough="1" refresh="0" l="1" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\no-media-found.png</img>
     <img x="788" y="471" w="343" h="24" j="5043" clickthrough="1" refresh="0" l="1" noCache="0" downloadIndicator="0" clearOnURLChange="0">images\loading-bar-base.png</img>
   </subpage>
 </gui>

@@ -107,6 +107,25 @@ var XBMC_Controller = function(params) {
 
 						return currentList || false;
 		},
+		checkMediaType:		function() {
+								// search term === typeof string !
+								params = {
+									string: "",			// return currentList.type || false if no search term supplied
+									object: self.mediaListTypesObj,	// default array to search
+									boolean: true,			// set to false to perform a strict search (won't return currentList.type as default)
+								};
+
+								for(var i = 0; i < arguments.length; i++) params[typeof arguments[i]] = arguments[i]; // override default params
+
+								try {
+									params.string = params.string.toLowerCase() || self.currentList.type || false;
+									// remove "Library.Get" from search term if checking against default mediaListTypes object
+									if (JSON.stringify(self.mediaListTypesObj) == JSON.stringify(params.object) && params.string.substr(5, 11) == "library.get") params.string = params.string.substr(16); // 16 = Audio/VideoLibrary.Get
+								} catch (e) {
+									consolelog("XBMC.checkMediaType(): Invalid search string (" + params.string + ") passed");
+								}
+								return (self.mediaListTypesObj[params.string]) || ((params.boolean) ? self.currentList.type || false : false);
+		}
 	};
 
 	try {
@@ -294,7 +313,7 @@ var XBMC_Controller = function(params) {
 
 	self.GetListArray = function(type) {
 		try {
-		if ( (type = self.in_array(type, self.mediaListTypes)) ) return self.mediaList[type];
+		if ( (type = self.checkMediaType(type)) ) return self.mediaList[type];
 		else return null;
 		} catch (e) { consolelog("error in XBMC_Controller_GetListArray() - " + e) }
 
@@ -361,7 +380,7 @@ var XBMC_Controller = function(params) {
 		console.log(arr);
 		consolelog("typeof arr = " + typeof arr);
 		try {
-			if ( (type = self.in_array(type, self.mediaListTypes)) ) self.mediaList[type] = (typeof arr == "object") ? arr : [];
+			if ( (type = self.checkMediaType(type)) ) self.mediaList[type] = (typeof arr == "object") ? arr : [];
 		} catch (e) { consolelog("error in XBMC_Controller.SetListArray() - " + e) }
 		/*
 		if ( typeof type == "string" ) type = type.toLowerCase();
@@ -451,11 +470,10 @@ var XBMC_Controller = function(params) {
 	self.GetURL = function(type) {
 		var host;
 		host = type.toLowerCase() + "://" +
-			((self.config.username === null) ? "" : self.config.username) +
-			((self.config.password === null) ? "" : ":" + self.config.password) +
-			((self.config.username === null) ? "" : "@") +
-			self.config.ip + ":" +
-			((type.toUpperCase() == "HTTP") ? "8080" : self.config.port) +
+			((self.config.username === null) ? "" : self.config.username.value) +
+			((self.config.password === null) ? "" : ":" + self.config.password.value) +
+			((self.config.username === null) ? "" : "@") + self.config.ip.value + ":" +
+			((type.toUpperCase() == "HTTP") ? "8080" : self.config.port.value) +
 			"/";
 		return host;
 	};
@@ -951,6 +969,7 @@ var XBMC_Controller = function(params) {
 	self.Get["artists"] = function(id, order, method) {
 		self.json("AudioLibrary.GetArtists", {"albumartistsonly": true, "sort": { "order": ((typeof order == "string") ? order : "ascending"), "method": ((typeof method == "string") ? method : "label") }, "properties": getMediaProperties("artists")}, ((typeof id != "undefined") ? id : self.ids.artists));
 	};
+	{"jsonrpc": "2.0", "method": "AudioLibrary.GetArtists", "params": {"fields": ["artistid", "label"]}, "id": 1}
 
 	self.Get["albums"] = function(artistID, fanart, id) {
 		self.currentArtistID = parseInt(artistID);

@@ -51,23 +51,29 @@ var XBMC_GUI = function() {
 			repeat:			242,	// D(button) + S(image)
 			shuffle:		243,	// D(button)
 			subtitles:		244,	// D(button)
+
 			yatse:		{
 				page:			5,	// D(main page)
+				popup_hider:		5015,	// D(subpage)
+				loading_slider:		5016,	// D(subpage) + S(image)
 				sidemenu:		{
 					subpage:		5001,
-					movies_info:		5020,
-					tvshows_info:		5021,
-					music_info:		5021,
-					playlists_info:		5023,
+					movies:			5020,	// D(button) + S(text)
+					tvshows:		5021,	// D(button) + S(text)
+					music:			5021,	// D(button) + S(text)
+					playlists:		5023,	// D(button) + S(text)
+					livetv:			5024,	// D(button)
+					remote:			0025,	// D(button)
+					settings:		0026,	// D(button)
 					np_thumbnail:		{
-								join:		5025,
+								join:		5027,	// S(image)
 								x:		null,
 								y:		null,
 								w:		null,
 								h:		null,
 					},
-					np_primary_info:	5026,
-					np_secondary_info:	5027,
+					np_primary_info:	5028,	// S(text)
+					np_secondary_info:	5029,	// S(text)
 				},
 				topbar:		{
 					subpage:		5003,
@@ -79,13 +85,13 @@ var XBMC_GUI = function() {
 				sub_commands:		5006,
 				pc_commands:		5007,
 				diagnostics:		{
-							subpage:	5008,
-							address:	5080,
-							port:		5081,
-							username: 	5082,
-							type:		5083,
-							speed:		5084,
-							media:		5085,
+							subpage:	5008,	// D
+							address:	5080,	// S(text)
+							port:		5081,	// S(text)
+							username: 	5082,	// S(text)
+							type:		5083,	// S(text)
+							speed:		5084,	// S(text)
+							media:		5085,	// S(text)
 				},
 				wall:			5010,
 				controls:		5011,
@@ -94,8 +100,6 @@ var XBMC_GUI = function() {
 						xbmc:			5013,		// D(subpage)
 						mysql:			5014,		// D(subpage)
 				},
-				popup_hider:		5015,	// D(subpage)
-				loading_slider:		5016,	// D(subpage) + S(image)
 				np_thumbnail:	{
 							join:		5030,
 							url:		null,
@@ -1808,6 +1812,8 @@ var XBMC_GUI = function() {
 	}
 
 	function resetGUI() {
+		setMediaListTitle(); // set to default
+
 		clearJoins = function() {
 			CF.setJoins([
 				{join: "s"+self.joins.yatse.np_info_one.join, value: ""},
